@@ -1,0 +1,139 @@
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+
+import { ScreenHeader } from "@/components/ScreenHeader";
+import { ScreenLayout } from "@/components/ScreenLayout";
+import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
+import type { RootStackParamList } from "@/navigation/types";
+import {
+  getVoiceStateLabel,
+  startListening,
+  stopListening,
+  type VoiceUiState,
+} from "@/services/voice";
+import { speakInstructions } from "@/services/speech";
+import { theme } from "@/theme";
+
+export const VOICE_INSTRUCTIONS =
+  "Tap the large microphone button to start talking. Tap again to stop.";
+
+type Props = NativeStackScreenProps<RootStackParamList, "Voice">;
+
+export function VoiceScreen({ navigation }: Props) {
+  const [state, setState] = useState<VoiceUiState>("idle");
+
+  useSpeakOnMount(VOICE_INSTRUCTIONS);
+
+  const handleMicPress = async () => {
+    if (state === "idle") {
+      setState("listening");
+      // TODO: [voice teammate] wire real STT pipeline
+      await startListening((transcript) => {
+        console.log("Voice transcript stub:", transcript);
+      });
+      return;
+    }
+
+    if (state === "listening") {
+      await stopListening();
+      setState("speaking");
+      // TODO: [voice teammate] replace with multilingual TTS response
+      await speakInstructions("Thank you. I heard you.");
+      setState("idle");
+    }
+  };
+
+  const micColor =
+    state === "listening"
+      ? theme.colors.accent
+      : state === "speaking"
+        ? theme.colors.primary
+        : theme.colors.foreground;
+
+  return (
+    <ScreenLayout>
+      <ScreenHeader
+        title="Voice"
+        subtitle="Talk to Coco"
+        onHomePress={() => navigation.navigate("Home")}
+      />
+
+      <View style={styles.container}>
+        <Text style={styles.status} allowFontScaling accessibilityLiveRegion="polite">
+          {getVoiceStateLabel(state)}
+        </Text>
+
+        <Pressable
+          onPress={handleMicPress}
+          accessibilityRole="button"
+          accessibilityLabel={
+            state === "listening" ? "Stop listening" : "Start listening"
+          }
+          accessibilityHint="Tap to talk to Coco"
+          style={({ pressed }) => [
+            styles.micButton,
+            state === "listening" && styles.micListening,
+            state === "speaking" && styles.micSpeaking,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Ionicons
+            name={state === "listening" ? "stop-circle" : "mic"}
+            size={96}
+            color={micColor}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          />
+        </Pressable>
+
+        <Text style={styles.hint} allowFontScaling>
+          Tap once to listen. Tap again when you are done.
+        </Text>
+      </View>
+    </ScreenLayout>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
+  },
+  status: {
+    ...theme.typography.title,
+    color: theme.colors.foreground,
+    textAlign: "center",
+  },
+  micButton: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: theme.border.width * 2,
+    borderColor: theme.colors.goldBorder,
+    backgroundColor: theme.colors.surfaceWarm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  micListening: {
+    borderColor: theme.colors.accent,
+    backgroundColor: theme.colors.tileProgressBg,
+  },
+  micSpeaking: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.tilePlayBg,
+  },
+  pressed: {
+    opacity: 0.92,
+  },
+  hint: {
+    ...theme.typography.body,
+    color: theme.colors.muted,
+    textAlign: "center",
+    paddingHorizontal: theme.spacing.md,
+  },
+});
