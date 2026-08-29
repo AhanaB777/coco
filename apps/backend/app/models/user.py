@@ -24,7 +24,10 @@ class User(Base):
     )
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
-    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.CAREGIVER)
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole, values_callable=lambda enum_cls: [e.value for e in enum_cls]),
+        default=UserRole.CAREGIVER,
+    )
     full_name: Mapped[str] = mapped_column(String(255))
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     region: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)

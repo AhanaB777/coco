@@ -17,9 +17,9 @@ PATIENT_1_ID = uuid.UUID("00000000-0000-4000-8000-000000000101")
 PATIENT_2_ID = uuid.UUID("00000000-0000-4000-8000-000000000102")
 PATIENT_3_ID = uuid.UUID("00000000-0000-4000-8000-000000000103")
 
-DEMO_ADMIN_EMAIL = "admin@coco.local"
+DEMO_ADMIN_EMAIL = "admin@coco-demo.io"
 DEMO_ADMIN_PASSWORD = "admin12345"
-DEMO_CAREGIVER_EMAIL = "caregiver@coco.local"
+DEMO_CAREGIVER_EMAIL = "caregiver@coco-demo.io"
 DEMO_CAREGIVER_PASSWORD = "caregiver12"
 
 
@@ -49,7 +49,7 @@ def seed_database(db: Session) -> None:
     )
     caregiver2 = User(
         id=CAREGIVER_2_ID,
-        email="caregiver2@coco.local",
+        email="caregiver2@coco-demo.io",
         password_hash=hash_password("caregiver22"),
         role=UserRole.CAREGIVER,
         full_name="Meera Boro",
