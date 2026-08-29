@@ -16,6 +16,8 @@ Usage (see adaptive.py):
 from . import rules
 from . import ml
 from .features import estimate_features
+from .personalization import recommend_personalization
+from .analytics import analyze_performance
 
 
 def recommend_difficulty(sessions_desc, cognitive_level: int) -> dict:
@@ -112,3 +114,45 @@ def recommend_difficulty(sessions_desc, cognitive_level: int) -> dict:
             response["reason"] += f" (ML cross-check suggests '{pred}' - flagged for review)"
 
     return response
+
+
+def get_full_recommendation(sessions_desc, patient, my_world_items: list | None = None) -> dict:
+    """
+    Top-level entry point matching COCO's three-branch AI engine design:
+
+        AI ENGINE
+          |-- Difficulty       (recommend_difficulty)
+          |-- Personalization  (recommend_personalization)
+          `-- Analytics        (analyze_performance)
+
+    sessions_desc: list of GameSession-like objects, most recent first.
+    patient: object/dict with .cognitive_level, .region, .preferred_language
+        (matches the existing Patient model's fields - no new columns
+        required for this to work today).
+    my_world_items: optional list of Module 8 gallery entries; pass None
+        until that table exists - personalization degrades gracefully to
+        region-theme-only recommendations.
+
+    Returns {"difficulty": {...}, "personalization": {...}, "analytics": {...}}
+    - a single call a new richer endpoint (e.g. GET /games/ai-summary/{id})
+    could expose to the mobile app and caregiver dashboard alike.
+    """
+    cognitive_level = getattr(patient, "cognitive_level", None) if not isinstance(patient, dict) \
+        else patient.get("cognitive_level")
+    region = getattr(patient, "region", None) if not isinstance(patient, dict) \
+        else patient.get("region")
+    preferred_language = getattr(patient, "preferred_language", None) if not isinstance(patient, dict) \
+        else patient.get("preferred_language")
+
+    difficulty = recommend_difficulty(sessions_desc, cognitive_level)
+    personalization = recommend_personalization(
+        sessions_desc, region=region, preferred_language=preferred_language,
+        my_world_items=my_world_items,
+    )
+    analytics = analyze_performance(sessions_desc)
+
+    return {
+        "difficulty": difficulty,
+        "personalization": personalization,
+        "analytics": analytics,
+    }

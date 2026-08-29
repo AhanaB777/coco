@@ -111,30 +111,123 @@ def seed_database(db: Session) -> None:
     ]
     db.add_all(reminders)
 
+    # --------------------------------------------------------------------
+    # Game session histories - hand-designed to demo three distinct AI
+    # engine narratives:
+    #   Lakshmi (Assam, cognitive_level=2): a rough middle session, then a
+    #       strong recovery streak -> AI recommends INCREASE to level 3.
+    #   Rajen (Assam, cognitive_level=3): steadily declining performance
+    #       -> AI recommends DECREASE and analytics fires decline_alert=True
+    #       (early cognitive intervention, straight from the problem statement).
+    #   Anjali (Meghalaya, cognitive_level=1): stable/mild improvement,
+    #       demos the Khasi Hills regional theme alongside Lakshmi/Rajen's
+    #       Assam theme.
+    # --------------------------------------------------------------------
     sessions = [
+        # ---- Lakshmi Devi: dip then strong recovery -> increase ----
         GameSession(
-            patient_id=PATIENT_1_ID,
-            game_type=GameType.MEMORY_MATCH,
-            score=72,
-            duration_seconds=180,
-            difficulty_level=2,
+            patient_id=PATIENT_1_ID, game_type=GameType.MEMORY_MATCH,
+            score=60, duration_seconds=150, difficulty_level=2,
+            played_at=now - timedelta(days=8),
+        ),
+        GameSession(
+            patient_id=PATIENT_1_ID, game_type=GameType.SEQUENCE_RECALL,
+            score=55, duration_seconds=160, difficulty_level=2,
+            played_at=now - timedelta(days=7),
+        ),
+        GameSession(
+            patient_id=PATIENT_1_ID, game_type=GameType.MEMORY_MATCH,
+            score=68, duration_seconds=120, difficulty_level=2,
+            played_at=now - timedelta(days=6),
+        ),
+        GameSession(
+            patient_id=PATIENT_1_ID, game_type=GameType.OBJECT_RECOGNITION,
+            score=70, duration_seconds=140, difficulty_level=2,
+            played_at=now - timedelta(days=5),
+        ),
+        GameSession(
+            patient_id=PATIENT_1_ID, game_type=GameType.MEMORY_MATCH,
+            score=78, duration_seconds=90, difficulty_level=2,
+            played_at=now - timedelta(days=4),
+        ),
+        GameSession(
+            patient_id=PATIENT_1_ID, game_type=GameType.SEQUENCE_RECALL,
+            score=82, duration_seconds=80, difficulty_level=2,
+            played_at=now - timedelta(days=3),
+        ),
+        GameSession(
+            patient_id=PATIENT_1_ID, game_type=GameType.MEMORY_MATCH,
+            score=45, duration_seconds=250, difficulty_level=2,
+            played_at=now - timedelta(days=2),  # a rough "off day"
+        ),
+        GameSession(
+            patient_id=PATIENT_1_ID, game_type=GameType.OBJECT_RECOGNITION,
+            score=88, duration_seconds=80, difficulty_level=2,
             played_at=now - timedelta(days=1),
         ),
         GameSession(
-            patient_id=PATIENT_1_ID,
-            game_type=GameType.SEQUENCE_RECALL,
-            score=85,
-            duration_seconds=240,
-            difficulty_level=2,
+            patient_id=PATIENT_1_ID, game_type=GameType.MEMORY_MATCH,
+            score=91, duration_seconds=70, difficulty_level=2,
             played_at=now,
         ),
+
+        # ---- Rajen Das: steady decline -> decrease + decline_alert ----
         GameSession(
-            patient_id=PATIENT_2_ID,
-            game_type=GameType.OBJECT_RECOGNITION,
-            score=60,
-            duration_seconds=150,
-            difficulty_level=3,
+            patient_id=PATIENT_2_ID, game_type=GameType.OBJECT_RECOGNITION,
+            score=75, duration_seconds=120, difficulty_level=3,
+            played_at=now - timedelta(days=6),
+        ),
+        GameSession(
+            patient_id=PATIENT_2_ID, game_type=GameType.MEMORY_MATCH,
+            score=70, duration_seconds=150, difficulty_level=3,
+            played_at=now - timedelta(days=5),
+        ),
+        GameSession(
+            patient_id=PATIENT_2_ID, game_type=GameType.OBJECT_RECOGNITION,
+            score=62, duration_seconds=200, difficulty_level=3,
+            played_at=now - timedelta(days=4),
+        ),
+        GameSession(
+            patient_id=PATIENT_2_ID, game_type=GameType.MEMORY_MATCH,
+            score=55, duration_seconds=250, difficulty_level=3,
+            played_at=now - timedelta(days=3),
+        ),
+        GameSession(
+            patient_id=PATIENT_2_ID, game_type=GameType.OBJECT_RECOGNITION,
+            score=48, duration_seconds=300, difficulty_level=3,
             played_at=now - timedelta(days=2),
+        ),
+        GameSession(
+            patient_id=PATIENT_2_ID, game_type=GameType.MEMORY_MATCH,
+            score=40, duration_seconds=330, difficulty_level=3,
+            played_at=now - timedelta(days=1),
+        ),
+        GameSession(
+            patient_id=PATIENT_2_ID, game_type=GameType.OBJECT_RECOGNITION,
+            score=35, duration_seconds=350, difficulty_level=3,
+            played_at=now,
+        ),
+
+        # ---- Anjali Sharma: stable / mild improvement, Meghalaya theme ----
+        GameSession(
+            patient_id=PATIENT_3_ID, game_type=GameType.MEMORY_MATCH,
+            score=58, duration_seconds=160, difficulty_level=1,
+            played_at=now - timedelta(days=3),
+        ),
+        GameSession(
+            patient_id=PATIENT_3_ID, game_type=GameType.SEQUENCE_RECALL,
+            score=62, duration_seconds=144, difficulty_level=1,
+            played_at=now - timedelta(days=2),
+        ),
+        GameSession(
+            patient_id=PATIENT_3_ID, game_type=GameType.MEMORY_MATCH,
+            score=60, duration_seconds=170, difficulty_level=1,
+            played_at=now - timedelta(days=1),
+        ),
+        GameSession(
+            patient_id=PATIENT_3_ID, game_type=GameType.OBJECT_RECOGNITION,
+            score=65, duration_seconds=150, difficulty_level=1,
+            played_at=now,
         ),
     ]
     db.add_all(sessions)

@@ -37,9 +37,12 @@ DEFAULT_ROUNDS = 10
 
 # Clamp bounds matching what the rule engine / trained model expect
 # (see rules.py MIN_TIME/MAX_TIME - keeping these in sync avoids feeding
-# the model out-of-distribution values).
-MIN_RESPONSE_TIME = 1.5
-MAX_RESPONSE_TIME = 15.0
+# the model out-of-distribution values). Calibrated for elderly users
+# doing one round of a cognitive game, not fast-reaction gaming - a
+# tighter range (e.g. 1.5-15s) clamps every real session to "slowest
+# possible" and unfairly tanks the speed component of the score.
+MIN_RESPONSE_TIME = 3.0
+MAX_RESPONSE_TIME = 45.0
 
 
 def estimate_features(score: int | None, duration_seconds: int | None, game_type: GameType):

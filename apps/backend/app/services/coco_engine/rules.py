@@ -20,9 +20,13 @@ W_ACCURACY = 0.5
 W_SPEED = 0.3
 W_CONSISTENCY = 0.2
 
-# Response time bounds used to normalize speed (seconds)
-MIN_TIME = 1.5
-MAX_TIME = 15.0
+# Response time bounds used to normalize speed (seconds).
+# Calibrated for ELDERLY/DEMENTIA users doing one round of a cognitive game -
+# not fast-reaction-time gaming. 3s = a quick, confident response; 45s = a
+# slow, effortful one. (Original 1.5-15s range was too tight and was
+# clamping every real session to "maximally slow" - see features.py note.)
+MIN_TIME = 3.0
+MAX_TIME = 45.0
 
 INCREASE_THRESHOLD = 0.75
 DECREASE_THRESHOLD = 0.40
