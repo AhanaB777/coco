@@ -24,7 +24,15 @@ export function LoginProfileScreen({ navigation }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      setProfiles(getAllProfiles());
+      let active = true;
+      getAllProfiles()
+        .then((result) => {
+          if (active) setProfiles(result);
+        })
+        .catch((error) => console.error("Failed to load profiles", error));
+      return () => {
+        active = false;
+      };
     }, [])
   );
 
@@ -80,11 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 2,
     borderColor: theme.colors.goldBorder,
-    shadowColor: theme.colors.primaryDark,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
+    boxShadow: "0px 4px 8px rgba(8, 79, 79, 0.12)",
   },
   tagline: {
     ...theme.typography.overline,

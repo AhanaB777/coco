@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { PinPad } from "@/components/PinPad";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { getProfileById } from "@/db/database";
+import type { PatientProfile } from "@/db/schema";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import type { RootStackParamList } from "@/navigation/types";
 import { useAuthStore } from "@/stores/authStore";
@@ -20,12 +21,29 @@ export function LoginPinScreen({ navigation, route }: Props) {
   const [pin, setPin] = useState("");
   const setActiveProfile = useAuthStore((state) => state.setActiveProfile);
 
-  const profile = useMemo(() => getProfileById(profileId), [profileId]);
+  // undefined = still loading, null = not found
+  const [profile, setProfile] = useState<PatientProfile | null | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    let active = true;
+    getProfileById(profileId)
+      .then((result) => {
+        if (active) setProfile(result);
+      })
+      .catch((error) => console.error("Failed to load profile", error));
+    return () => {
+      active = false;
+    };
+  }, [profileId]);
 
   useSpeakOnMount(
-    profile
-      ? `Enter PIN for ${profile.display_name}. ${LOGIN_PIN_INSTRUCTIONS}`
-      : LOGIN_PIN_INSTRUCTIONS
+    profile === undefined
+      ? ""
+      : profile
+        ? `Enter PIN for ${profile.display_name}. ${LOGIN_PIN_INSTRUCTIONS}`
+        : LOGIN_PIN_INSTRUCTIONS
   );
 
   const handleComplete = (enteredPin: string) => {

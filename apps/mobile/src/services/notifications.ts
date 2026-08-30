@@ -1,3 +1,4 @@
+// Native (iOS/Android) notifications setup — web uses notifications.web.ts.
 import * as Notifications from "expo-notifications";
 
 Notifications.setNotificationHandler({

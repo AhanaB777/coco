@@ -1,3 +1,4 @@
+// Native (iOS/Android) reminder scheduling — web uses reminders.web.ts.
 import * as Notifications from "expo-notifications";
 
 export interface ScheduleReminderInput {

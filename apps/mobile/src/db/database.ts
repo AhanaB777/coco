@@ -1,4 +1,4 @@
-import { openDatabaseSync, type SQLiteDatabase } from "expo-sqlite";
+import { openDatabaseAsync, type SQLiteDatabase } from "expo-sqlite";
 
 import {
   CREATE_GAME_SESSIONS_TABLE,
@@ -10,27 +10,30 @@ import {
 
 const DB_NAME = "coco.db";
 
-let database: SQLiteDatabase | null = null;
+// Async API only: the sync API (openDatabaseSync/execSync/...) requires
+// SharedArrayBuffer on web, which needs cross-origin isolation headers that
+// the Expo dev server does not serve.
+let databasePromise: Promise<SQLiteDatabase> | null = null;
 
-export function getDatabase(): SQLiteDatabase {
-  if (!database) {
-    database = openDatabaseSync(DB_NAME);
+export function getDatabase(): Promise<SQLiteDatabase> {
+  if (!databasePromise) {
+    databasePromise = openDatabaseAsync(DB_NAME);
   }
-  return database;
+  return databasePromise;
 }
 
 export async function initializeDatabase(): Promise<void> {
-  const db = getDatabase();
+  const db = await getDatabase();
 
-  db.execSync(CREATE_PATIENT_PROFILES_TABLE);
-  db.execSync(CREATE_REMINDERS_TABLE);
-  db.execSync(CREATE_GAME_SESSIONS_TABLE);
+  await db.execAsync(CREATE_PATIENT_PROFILES_TABLE);
+  await db.execAsync(CREATE_REMINDERS_TABLE);
+  await db.execAsync(CREATE_GAME_SESSIONS_TABLE);
 
-  seedDemoData(db);
+  await seedDemoData(db);
 }
 
-function seedDemoData(db: SQLiteDatabase): void {
-  const profileCount = db.getFirstSync<{ count: number }>(
+async function seedDemoData(db: SQLiteDatabase): Promise<void> {
+  const profileCount = await db.getFirstAsync<{ count: number }>(
     "SELECT COUNT(*) as count FROM patient_profiles"
   );
 
@@ -70,7 +73,7 @@ function seedDemoData(db: SQLiteDatabase): void {
   ];
 
   for (const profile of profiles) {
-    db.runSync(
+    await db.runAsync(
       `INSERT INTO patient_profiles (id, display_name, photo_uri, pin, caregiver_id, created_at)
        VALUES (?, ?, ?, ?, ?, ?)`,
       profile.id,
@@ -113,7 +116,7 @@ function seedDemoData(db: SQLiteDatabase): void {
   ];
 
   for (const reminder of reminders) {
-    db.runSync(
+    await db.runAsync(
       `INSERT INTO reminders (id, patient_id, title, reminder_type, scheduled_at, is_done, completed_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       reminder.id,
@@ -127,31 +130,31 @@ function seedDemoData(db: SQLiteDatabase): void {
   }
 }
 
-export function getAllProfiles(): PatientProfile[] {
-  const db = getDatabase();
-  return db.getAllSync<PatientProfile>(
+export async function getAllProfiles(): Promise<PatientProfile[]> {
+  const db = await getDatabase();
+  return db.getAllAsync<PatientProfile>(
     "SELECT * FROM patient_profiles ORDER BY display_name ASC"
   );
 }
 
-export function getProfileById(id: string): PatientProfile | null {
-  const db = getDatabase();
+export async function getProfileById(id: string): Promise<PatientProfile | null> {
+  const db = await getDatabase();
   return (
-    db.getFirstSync<PatientProfile>(
+    (await db.getFirstAsync<PatientProfile>(
       "SELECT * FROM patient_profiles WHERE id = ?",
       id
-    ) ?? null
+    )) ?? null
   );
 }
 
-export function getTodayReminders(patientId: string): Reminder[] {
-  const db = getDatabase();
+export async function getTodayReminders(patientId: string): Promise<Reminder[]> {
+  const db = await getDatabase();
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   const end = new Date();
   end.setHours(23, 59, 59, 999);
 
-  return db.getAllSync<Reminder>(
+  return db.getAllAsync<Reminder>(
     `SELECT * FROM reminders
      WHERE patient_id = ?
        AND scheduled_at >= ?
@@ -164,9 +167,12 @@ export function getTodayReminders(patientId: string): Reminder[] {
 }
 
 // TODO: [reminders teammate] implement full CRUD and sync with backend
-export function markReminderDone(id: string, isDone: boolean): void {
-  const db = getDatabase();
-  db.runSync(
+export async function markReminderDone(
+  id: string,
+  isDone: boolean
+): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync(
     `UPDATE reminders
      SET is_done = ?, completed_at = ?
      WHERE id = ?`,
@@ -177,13 +183,13 @@ export function markReminderDone(id: string, isDone: boolean): void {
 }
 
 // TODO: [games teammate] implement game session persistence and sync
-export function saveGameSessionStub(
+export async function saveGameSessionStub(
   patientId: string,
   gameType: string,
   score: number
-): void {
-  const db = getDatabase();
-  db.runSync(
+): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync(
     `INSERT INTO game_sessions (id, patient_id, game_type, score, duration_seconds, played_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
     `session-${Date.now()}`,
@@ -195,14 +201,16 @@ export function saveGameSessionStub(
   );
 }
 
-export function getTodayGameSessionCount(patientId: string): number {
-  const db = getDatabase();
+export async function getTodayGameSessionCount(
+  patientId: string
+): Promise<number> {
+  const db = await getDatabase();
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   const end = new Date();
   end.setHours(23, 59, 59, 999);
 
-  const result = db.getFirstSync<{ count: number }>(
+  const result = await db.getFirstAsync<{ count: number }>(
     `SELECT COUNT(*) as count FROM game_sessions
      WHERE patient_id = ?
        AND played_at >= ?

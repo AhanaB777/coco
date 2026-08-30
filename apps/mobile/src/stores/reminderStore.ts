@@ -8,22 +8,22 @@ import type { Reminder } from "@/db/schema";
 
 interface ReminderState {
   reminders: Reminder[];
-  loadTodayReminders: (patientId: string) => void;
-  toggleDone: (id: string) => void;
+  loadTodayReminders: (patientId: string) => Promise<void>;
+  toggleDone: (id: string) => Promise<void>;
 }
 
 export const useReminderStore = create<ReminderState>((set, get) => ({
   reminders: [],
-  loadTodayReminders: (patientId) => {
-    const reminders = getTodayReminders(patientId);
+  loadTodayReminders: async (patientId) => {
+    const reminders = await getTodayReminders(patientId);
     set({ reminders });
   },
-  toggleDone: (id) => {
+  toggleDone: async (id) => {
     const current = get().reminders.find((item) => item.id === id);
     if (!current) return;
 
     const nextDone = current.is_done === 0;
-    markReminderDoneInDb(id, nextDone);
+    await markReminderDoneInDb(id, nextDone);
 
     set({
       reminders: get().reminders.map((item) =>

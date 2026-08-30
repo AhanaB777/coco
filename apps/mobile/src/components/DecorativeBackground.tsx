@@ -6,7 +6,7 @@ import { theme } from "@/theme";
 /** Soft hill-sky gradient — Brahmaputra mist at dawn, very subtle */
 export function DecorativeBackground() {
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, styles.noPointer]}>
       <LinearGradient
         colors={[
           theme.colors.background,
@@ -23,6 +23,9 @@ export function DecorativeBackground() {
 }
 
 const styles = StyleSheet.create({
+  noPointer: {
+    pointerEvents: "none",
+  },
   orbTop: {
     position: "absolute",
     top: 40,

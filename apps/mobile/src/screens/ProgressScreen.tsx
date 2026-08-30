@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
@@ -18,9 +18,19 @@ type Props = NativeStackScreenProps<RootStackParamList, "Progress">;
 export function ProgressScreen({ navigation }: Props) {
   const activeProfileId = useAuthStore((state) => state.activeProfileId);
 
-  const gamesPlayed = useMemo(() => {
-    if (!activeProfileId) return 0;
-    return getTodayGameSessionCount(activeProfileId);
+  const [gamesPlayed, setGamesPlayed] = useState(0);
+
+  useEffect(() => {
+    if (!activeProfileId) return;
+    let active = true;
+    getTodayGameSessionCount(activeProfileId)
+      .then((count) => {
+        if (active) setGamesPlayed(count);
+      })
+      .catch((error) => console.error("Failed to load game sessions", error));
+    return () => {
+      active = false;
+    };
   }, [activeProfileId]);
 
   const summary =
