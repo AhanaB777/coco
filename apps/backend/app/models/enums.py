@@ -23,3 +23,8 @@ class ReminderType(str, enum.Enum):
     HYDRATION = "hydration"
     ACTIVITY = "activity"
     APPOINTMENT = "appointment"
+
+class MyWorldCategory(str, enum.Enum):
+    PERSON = "person"
+    PLACE = "place"
+    OBJECT = "object"

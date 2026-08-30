@@ -1,3 +1,4 @@
+from app.models.my_world_item import MyWorldItem
 from app.models.game_session import GameSession
 from app.models.patient import Patient
 from app.models.reminder import Reminder

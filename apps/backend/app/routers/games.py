@@ -1,3 +1,4 @@
+from app.models.my_world_item import MyWorldItem
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -103,6 +104,7 @@ def get_ai_summary(
                           for the caregiver dashboard
     """
     patient = get_patient_for_auth(patient_id, auth, db)
+
     sessions = (
         db.query(GameSession)
         .filter(GameSession.patient_id == patient.id)
@@ -110,7 +112,34 @@ def get_ai_summary(
         .limit(10)
         .all()
     )
-    result = get_full_recommendation(sessions, patient, my_world_items=None)
+
+    my_world_rows = (
+        db.query(MyWorldItem)
+        .filter(MyWorldItem.patient_id == patient.id)
+        .all()
+    )
+
+    my_world_items = [
+        {
+            "id": str(item.id),
+            "name": item.name,
+            "relationship": item.relationship,
+            "success_rate": item.success_rate,
+            "last_shown_at": (
+                item.last_shown_at.isoformat()
+                if item.last_shown_at
+                else None
+            ),
+        }
+        for item in my_world_rows
+    ]
+
+    result = get_full_recommendation(
+        sessions,
+        patient,
+        my_world_items=my_world_items,
+    )
+
     return AISummaryResponse(
         patient_id=str(patient.id),
         difficulty=result["difficulty"],

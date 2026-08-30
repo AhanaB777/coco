@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import admin, auth, caregivers, games, patients, progress, reminders
+from app.routers import admin, auth, caregivers, games, patients, progress, reminders, my_world
 from app.schemas import HealthResponse
 
 app = FastAPI(
@@ -28,6 +28,7 @@ app.include_router(reminders.router, prefix="/api/v1")
 app.include_router(progress.router, prefix="/api/v1")
 app.include_router(caregivers.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1")
+app.include_router(my_world.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["health"])
