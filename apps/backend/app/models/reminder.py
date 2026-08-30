@@ -27,7 +27,9 @@ class Reminder(Base):
     )
     title: Mapped[str] = mapped_column(String(255))
     message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    reminder_type: Mapped[ReminderType] = mapped_column(Enum(ReminderType))
+    reminder_type: Mapped[ReminderType] = mapped_column(
+        Enum(ReminderType, values_callable=lambda enum_cls: [e.value for e in enum_cls])
+    )
     scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     is_done: Mapped[bool] = mapped_column(Boolean, default=False)
     completed_at: Mapped[Optional[datetime]] = mapped_column(

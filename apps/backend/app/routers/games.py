@@ -11,6 +11,9 @@ from app.models import GameSession
 from app.schemas.game import DifficultyResponse, GameSessionCreate, GameSessionResponse
 from app.services.adaptive import get_next_difficulty
 
+from app.schemas.game_ai_summary import AISummaryResponse
+from app.services.coco_engine import get_full_recommendation
+
 router = APIRouter(prefix="/games", tags=["games"])
 
 
@@ -81,4 +84,36 @@ def get_difficulty(
         patient_id=str(patient.id),
         suggested_difficulty=suggested,
         cognitive_level=patient.cognitive_level,
+    )
+
+
+@router.get("/ai-summary/{patient_id}", response_model=AISummaryResponse)
+def get_ai_summary(
+    patient_id: UUID,
+    auth: AuthContext = Depends(require_roles(AuthRole.CAREGIVER, AuthRole.PATIENT)),
+    db: Session = Depends(get_db),
+):
+    """
+    COCO's full AI engine output for this patient in one call:
+      - difficulty:      next recommended game difficulty (1-5)
+      - personalization: which cognitive domain + content theme to serve
+                          next, using NER regional themes and (once
+                          Module 8 exists) My World photo data
+      - analytics:       per-domain trends, adherence, decline alerts
+                          for the caregiver dashboard
+    """
+    patient = get_patient_for_auth(patient_id, auth, db)
+    sessions = (
+        db.query(GameSession)
+        .filter(GameSession.patient_id == patient.id)
+        .order_by(GameSession.played_at.desc())
+        .limit(10)
+        .all()
+    )
+    result = get_full_recommendation(sessions, patient, my_world_items=None)
+    return AISummaryResponse(
+        patient_id=str(patient.id),
+        difficulty=result["difficulty"],
+        personalization=result["personalization"],
+        analytics=result["analytics"],
     )

@@ -25,7 +25,9 @@ class GameSession(Base):
     patient_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("patients.id"), index=True
     )
-    game_type: Mapped[GameType] = mapped_column(Enum(GameType))
+    game_type: Mapped[GameType] = mapped_column(
+        Enum(GameType, values_callable=lambda enum_cls: [e.value for e in enum_cls])
+    )
     score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     duration_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     difficulty_level: Mapped[int] = mapped_column(Integer, default=1)
