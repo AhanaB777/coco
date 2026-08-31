@@ -7,7 +7,6 @@ import { theme } from "@/theme";
 interface ScreenLayoutProps {
   children: ReactNode;
   scrollable?: boolean;
-  /** Show soft gradient background wash (default on) */
   decorated?: boolean;
 }
 
@@ -51,11 +50,13 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.xs,
     paddingBottom: theme.spacing.sm,
   },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.xs,
     paddingBottom: theme.spacing.lg,
   },
   contentArea: {

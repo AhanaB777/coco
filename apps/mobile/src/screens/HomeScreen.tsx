@@ -15,18 +15,18 @@ export const HOME_INSTRUCTIONS =
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 export function HomeScreen({ navigation }: Props) {
-  const activeProfileName = useAuthStore((state) => state.activeProfileName);
+  const patientName = useAuthStore((state) => state.patientName);
 
   useSpeakOnMount(
-    activeProfileName
-      ? `Welcome back, ${activeProfileName}. ${HOME_INSTRUCTIONS}`
+    patientName
+      ? `Welcome back, ${patientName}. ${HOME_INSTRUCTIONS}`
       : HOME_INSTRUCTIONS
   );
 
   return (
     <ScreenLayout>
       <WelcomeCard
-        name={activeProfileName ?? "Friend"}
+        name={patientName ?? "Friend"}
         message="What would you like to do today?"
       />
 
@@ -34,7 +34,7 @@ export function HomeScreen({ navigation }: Props) {
         <View style={styles.row}>
           <IconTile
             label="Play"
-            iconName="game-controller-outline"
+            iconName="GameController"
             accentColor={theme.colors.tilePlay}
             backgroundColor={theme.colors.tilePlayBg}
             onPress={() => navigation.navigate("Play")}
@@ -42,7 +42,7 @@ export function HomeScreen({ navigation }: Props) {
           />
           <IconTile
             label="Reminders"
-            iconName="alarm-outline"
+            iconName="Bell"
             accentColor={theme.colors.tileReminders}
             backgroundColor={theme.colors.tileRemindersBg}
             onPress={() => navigation.navigate("Reminders")}
@@ -52,7 +52,7 @@ export function HomeScreen({ navigation }: Props) {
         <View style={styles.row}>
           <IconTile
             label="Progress"
-            iconName="stats-chart-outline"
+            iconName="ChartLineUp"
             accentColor={theme.colors.tileProgress}
             backgroundColor={theme.colors.tileProgressBg}
             onPress={() => navigation.navigate("Progress")}
@@ -60,7 +60,7 @@ export function HomeScreen({ navigation }: Props) {
           />
           <IconTile
             label="Voice"
-            iconName="mic-outline"
+            iconName="Microphone"
             accentColor={theme.colors.tileVoice}
             backgroundColor={theme.colors.tileVoiceBg}
             onPress={() => navigation.navigate("Voice")}
@@ -79,7 +79,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   row: {
-    flex: 1,
     flexDirection: "row",
     gap: theme.touch.gap,
   },

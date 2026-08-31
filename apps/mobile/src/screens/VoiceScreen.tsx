@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import { AppIcon } from "@/components/AppIcon";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
@@ -49,8 +49,8 @@ export function VoiceScreen({ navigation }: Props) {
     state === "listening"
       ? theme.colors.accent
       : state === "speaking"
-        ? theme.colors.primary
-        : theme.colors.foreground;
+        ? theme.colors.primaryDark
+        : theme.colors.tileVoice;
 
   return (
     <ScreenLayout>
@@ -79,12 +79,11 @@ export function VoiceScreen({ navigation }: Props) {
             pressed && styles.pressed,
           ]}
         >
-          <Ionicons
-            name={state === "listening" ? "stop-circle" : "mic"}
+          <AppIcon
+            name={state === "listening" ? "StopCircle" : "Microphone"}
             size={96}
             color={micColor}
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
+            weight="fill"
           />
         </Pressable>
 
@@ -115,7 +114,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     borderWidth: theme.border.width * 2,
     borderColor: theme.colors.goldBorder,
-    backgroundColor: theme.colors.surfaceWarm,
+    backgroundColor: theme.colors.tileVoiceBg,
     alignItems: "center",
     justifyContent: "center",
   },

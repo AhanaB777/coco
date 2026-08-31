@@ -57,11 +57,11 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   accentBar: {
-    width: 5,
-    minHeight: 48,
+    width: 4,
+    minHeight: 44,
     backgroundColor: theme.colors.gold,
-    borderRadius: 3,
-    marginTop: 4,
+    borderRadius: 2,
+    marginTop: 6,
   },
   textBlock: {
     flex: 1,

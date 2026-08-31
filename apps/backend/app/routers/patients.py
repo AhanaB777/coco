@@ -64,6 +64,17 @@ def create_patient(
     return _patient_response(patient)
 
 
+@router.get("/me", response_model=PatientResponse)
+def get_my_patient(
+    auth: AuthContext = Depends(require_roles(AuthRole.PATIENT)),
+    db: Session = Depends(get_db),
+):
+    if auth.patient_id is None:
+        raise HTTPException(status_code=400, detail="Patient context required")
+    patient = get_patient_for_auth(auth.patient_id, auth, db)
+    return _patient_response(patient)
+
+
 @router.get("/{patient_id}", response_model=PatientResponse)
 def get_patient(
     patient_id: UUID,

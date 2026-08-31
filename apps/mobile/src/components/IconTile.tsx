@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRef } from "react";
 import {
   AccessibilityInfo,
@@ -9,17 +8,19 @@ import {
   View,
 } from "react-native";
 
-import { theme, wovenBorder } from "@/theme";
+import { AppIcon, type AppIconName } from "@/components/AppIcon";
+import { iconMedallion, theme } from "@/theme";
 
 interface IconTileProps {
   label: string;
-  iconName: keyof typeof Ionicons.glyphMap;
+  iconName: AppIconName;
   onPress: () => void;
   accessibilityLabel?: string;
   accessibilityHint?: string;
   flex?: number;
   accentColor?: string;
   backgroundColor?: string;
+  iconWeight?: "duotone" | "regular" | "fill";
 }
 
 export function IconTile({
@@ -29,8 +30,9 @@ export function IconTile({
   accessibilityLabel,
   accessibilityHint,
   flex = 1,
-  accentColor = theme.colors.primary,
-  backgroundColor = theme.colors.surface,
+  accentColor = theme.colors.primaryDark,
+  backgroundColor = theme.colors.surfaceElevated,
+  iconWeight = "duotone",
 }: IconTileProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -64,20 +66,22 @@ export function IconTile({
         accessibilityHint={accessibilityHint}
         style={({ pressed }) => [
           styles.tile,
-          { backgroundColor, borderColor: accentColor },
+          {
+            backgroundColor,
+            borderColor: accentColor,
+          },
           pressed && styles.pressed,
         ]}
       >
-        <View style={[styles.iconCircle, { backgroundColor: accentColor }]}>
-          <Ionicons
+        <View style={iconMedallion(theme.colors.surfaceElevated)}>
+          <AppIcon
             name={iconName}
-            size={40}
-            color={theme.colors.onPrimary}
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
+            size={38}
+            color={accentColor}
+            weight={iconWeight}
           />
         </View>
-        <Text style={[styles.label, { color: theme.colors.foreground }]} allowFontScaling>
+        <Text style={styles.label} allowFontScaling>
           {label}
         </Text>
       </Pressable>
@@ -91,27 +95,23 @@ const styles = StyleSheet.create({
   },
   tile: {
     flex: 1,
-    ...wovenBorder,
     minHeight: theme.touch.tileMinHeight,
     alignItems: "center",
     justifyContent: "center",
     padding: theme.spacing.sm,
     gap: theme.spacing.sm,
-  },
-  iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: theme.colors.goldBorder,
+    borderRadius: theme.radius.lg,
+    borderWidth: theme.border.subtleWidth,
+    ...theme.elevation.sm,
   },
   pressed: {
-    opacity: 0.92,
+    opacity: 0.94,
+    transform: [{ scale: 0.99 }],
   },
   label: {
     ...theme.typography.label,
+    color: theme.colors.foreground,
     textAlign: "center",
+    letterSpacing: 0.4,
   },
 });

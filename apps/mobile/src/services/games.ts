@@ -1,17 +1,42 @@
-import type { GameType } from "@/db/schema";
+import type { GameSession, GameSessionCreate, GameType } from "@/types/api";
+
+import { api } from "@/services/api";
 
 export interface LaunchGameResult {
   started: boolean;
   message: string;
 }
 
-// TODO: [games teammate] mount actual game modules and return session metadata
+export async function createGameSession(
+  payload: GameSessionCreate
+): Promise<GameSession> {
+  const { data } = await api.post<GameSession>(
+    "/api/v1/games/sessions",
+    payload
+  );
+  return data;
+}
+
+/** Stub launch — records a demo session to the backend when the game shell is used. */
 export async function launchGame(
   gameType: GameType,
   patientId: string
 ): Promise<LaunchGameResult> {
-  return {
-    started: false,
-    message: `Game shell ready for ${gameType} (patient: ${patientId})`,
-  };
+  try {
+    await createGameSession({
+      patient_id: patientId,
+      game_type: gameType,
+      score: 75,
+      duration_seconds: 120,
+    });
+    return {
+      started: true,
+      message: `Session recorded for ${gameType}`,
+    };
+  } catch {
+    return {
+      started: false,
+      message: `Could not save session for ${gameType}`,
+    };
+  }
 }

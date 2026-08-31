@@ -8,7 +8,7 @@ import { TopAccent } from "@/components/TopAccent";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import type { RootStackParamList } from "@/navigation/types";
 import { useAuthStore } from "@/stores/authStore";
-import { theme } from "@/theme";
+import { theme, logoPedestal } from "@/theme";
 
 export const SPLASH_INSTRUCTIONS =
   "Welcome to Coco. Your memory care companion for North East India.";
@@ -16,21 +16,22 @@ export const SPLASH_INSTRUCTIONS =
 type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
 
 export function SplashScreen({ navigation }: Props) {
-  const activeProfileId = useAuthStore((state) => state.activeProfileId);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
 
   useSpeakOnMount(SPLASH_INSTRUCTIONS);
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
+    // Require PIN on each launch; keep remembered patient identity.
+    useAuthStore.getState().clearSession();
+
     const timer = setTimeout(() => {
-      if (activeProfileId) {
-        navigation.replace("Home");
-      } else {
-        navigation.replace("LoginProfile");
-      }
-    }, 1800);
+      navigation.replace("LoginPin");
+    }, 1400);
 
     return () => clearTimeout(timer);
-  }, [activeProfileId, navigation]);
+  }, [hasHydrated, navigation]);
 
   return (
     <ScreenLayout decorated={false}>
@@ -68,14 +69,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   logoPedestal: {
+    ...logoPedestal,
     width: 112,
     height: 112,
     borderRadius: 56,
-    backgroundColor: theme.colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: theme.colors.goldBorder,
     marginBottom: theme.spacing.sm,
   },
   badge: {

@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
-import type { ReminderType } from "@/db/schema";
-import { theme, wovenBorder } from "@/theme";
+import { AppIcon } from "@/components/AppIcon";
+import type { ReminderType } from "@/types/api";
+import { surfaceCard, theme } from "@/theme";
 
 interface ReminderCardProps {
   title: string;
@@ -15,6 +15,7 @@ interface ReminderCardProps {
 const TYPE_LABELS: Record<ReminderType, string> = {
   medicine: "Medicine",
   hydration: "Hydration",
+  activity: "Activity",
   appointment: "Appointment",
 };
 
@@ -62,12 +63,11 @@ export function ReminderCard({
           pressed && styles.pressed,
         ]}
       >
-        <Ionicons
-          name={isDone ? "checkmark-circle" : "ellipse-outline"}
+        <AppIcon
+          name={isDone ? "CheckCircle" : "CircleDashed"}
           size={40}
-          color={isDone ? theme.colors.onAccent : theme.colors.primary}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
+          color={isDone ? theme.colors.onAccent : theme.colors.primaryDark}
+          weight={isDone ? "fill" : "regular"}
         />
       </Pressable>
     </View>
@@ -76,9 +76,7 @@ export function ReminderCard({
 
 const styles = StyleSheet.create({
   card: {
-    ...wovenBorder,
-    backgroundColor: theme.colors.surfaceWarm,
-    borderColor: theme.colors.goldBorder,
+    ...surfaceCard(),
     padding: theme.spacing.md,
     marginBottom: theme.spacing.sm,
     flexDirection: "row",
@@ -92,16 +90,15 @@ const styles = StyleSheet.create({
   badge: {
     alignSelf: "flex-start",
     backgroundColor: theme.colors.goldLight,
-    borderWidth: 1,
-    borderColor: theme.colors.goldBorder,
-    borderRadius: 8,
-    paddingHorizontal: theme.spacing.xs,
-    paddingVertical: 4,
+    borderRadius: theme.radius.full,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 6,
   },
   badgeText: {
     ...theme.typography.caption,
-    color: theme.colors.muted,
+    color: theme.colors.tileReminders,
     fontFamily: "AtkinsonHyperlegible_700Bold",
+    fontWeight: "600",
   },
   title: {
     ...theme.typography.label,
@@ -120,16 +117,17 @@ const styles = StyleSheet.create({
     minHeight: theme.touch.minTarget,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: theme.border.radius,
-    borderWidth: theme.border.width,
+    borderRadius: theme.radius.md,
+    borderWidth: theme.border.subtleWidth,
     borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceElevated,
+    ...theme.elevation.sm,
   },
   checkButtonDone: {
     backgroundColor: theme.colors.accent,
     borderColor: theme.colors.accent,
   },
   pressed: {
-    opacity: 0.9,
+    opacity: 0.92,
   },
 });

@@ -1,9 +1,8 @@
-import type { GameType } from "@/db/schema";
+import type { GameType } from "@/types/api";
 
 export type RootStackParamList = {
   Splash: undefined;
-  LoginProfile: undefined;
-  LoginPin: { profileId: string };
+  LoginPin: undefined;
   Home: undefined;
   Play: undefined;
   GameStub: { gameType: GameType };

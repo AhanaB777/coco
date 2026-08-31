@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -18,8 +18,10 @@ export const REMINDERS_INSTRUCTIONS =
 type Props = NativeStackScreenProps<RootStackParamList, "Reminders">;
 
 export function RemindersScreen({ navigation }: Props) {
-  const activeProfileId = useAuthStore((state) => state.activeProfileId);
+  const patientId = useAuthStore((state) => state.patientId);
   const reminders = useReminderStore((state) => state.reminders);
+  const isLoading = useReminderStore((state) => state.isLoading);
+  const error = useReminderStore((state) => state.error);
   const loadTodayReminders = useReminderStore(
     (state) => state.loadTodayReminders
   );
@@ -29,10 +31,10 @@ export function RemindersScreen({ navigation }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      if (activeProfileId) {
-        loadTodayReminders(activeProfileId);
+      if (patientId) {
+        loadTodayReminders(patientId);
       }
-    }, [activeProfileId, loadTodayReminders])
+    }, [patientId, loadTodayReminders])
   );
 
   return (
@@ -43,7 +45,20 @@ export function RemindersScreen({ navigation }: Props) {
         onHomePress={() => navigation.navigate("Home")}
       />
 
-      {reminders.length === 0 ? (
+      {isLoading ? (
+        <ActivityIndicator
+          size="large"
+          color={theme.colors.primary}
+          style={styles.loader}
+          accessibilityLabel="Loading reminders"
+        />
+      ) : error ? (
+        <View style={styles.empty}>
+          <Text style={styles.errorText} allowFontScaling accessibilityRole="alert">
+            {error}
+          </Text>
+        </View>
+      ) : reminders.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText} allowFontScaling>
             No reminders for today.
@@ -59,7 +74,7 @@ export function RemindersScreen({ navigation }: Props) {
               title={item.title}
               reminderType={item.reminder_type}
               scheduledAt={item.scheduled_at}
-              isDone={item.is_done === 1}
+              isDone={item.is_done}
               onToggleDone={() => toggleDone(item.id)}
             />
           )}
@@ -70,6 +85,9 @@ export function RemindersScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  loader: {
+    marginTop: theme.spacing.xl,
+  },
   empty: {
     ...theme.typography.body,
     padding: theme.spacing.lg,
@@ -78,6 +96,11 @@ const styles = StyleSheet.create({
   emptyText: {
     ...theme.typography.body,
     color: theme.colors.muted,
+    textAlign: "center",
+  },
+  errorText: {
+    ...theme.typography.body,
+    color: theme.colors.destructive,
     textAlign: "center",
   },
 });

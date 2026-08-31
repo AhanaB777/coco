@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { AppIcon } from "@/components/AppIcon";
 import { theme } from "@/theme";
 
 interface PinPadProps {
@@ -34,7 +34,10 @@ export function PinPad({
 
   return (
     <View style={styles.container}>
-      <View style={styles.dots} accessibilityLabel={`PIN length ${value.length} of ${maxLength}`}>
+      <View
+        style={styles.dots}
+        accessibilityLabel={`PIN length ${value.length} of ${maxLength}`}
+      >
         {Array.from({ length: maxLength }).map((_, index) => (
           <View
             key={index}
@@ -64,12 +67,11 @@ export function PinPad({
               ]}
             >
               {isBack ? (
-                <Ionicons
-                  name="backspace-outline"
+                <AppIcon
+                  name="Backspace"
                   size={32}
                   color={theme.colors.foreground}
-                  accessibilityElementsHidden
-                  importantForAccessibility="no-hide-descendants"
+                  weight="regular"
                 />
               ) : (
                 <Text style={styles.keyText} allowFontScaling>
@@ -87,23 +89,24 @@ export function PinPad({
 const styles = StyleSheet.create({
   container: {
     gap: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
   },
   dots: {
     flexDirection: "row",
     justifyContent: "center",
     gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
   dot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: theme.border.width,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: theme.border.subtleWidth + 1,
     borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceElevated,
   },
   dotFilled: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryDark,
   },
   grid: {
     flexDirection: "row",
@@ -116,17 +119,19 @@ const styles = StyleSheet.create({
     minHeight: theme.touch.minTarget,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: theme.border.radius,
-    borderWidth: theme.border.width,
-    borderColor: theme.colors.goldBorder,
-    backgroundColor: theme.colors.surfaceWarm,
+    borderRadius: theme.radius.md,
+    borderWidth: theme.border.subtleWidth,
+    borderColor: theme.colors.borderSubtle,
+    backgroundColor: theme.colors.surfaceElevated,
+    ...theme.elevation.sm,
   },
   keySpacer: {
     width: "30%",
     minHeight: theme.touch.minTarget,
   },
   keyPressed: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surfaceWarm,
+    opacity: 0.95,
   },
   keyText: {
     ...theme.typography.title,

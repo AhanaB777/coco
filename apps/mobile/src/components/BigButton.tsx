@@ -63,6 +63,9 @@ export function BigButton({
   const textStyle =
     variant === "outline" ? styles.outlineText : styles.filledText;
 
+  const elevationStyle =
+    variant === "outline" ? undefined : theme.elevation.sm;
+
   return (
     <Animated.View style={[{ transform: [{ scale }] }, style]}>
       <Pressable
@@ -77,6 +80,7 @@ export function BigButton({
         style={({ pressed }) => [
           styles.button,
           variantStyle,
+          elevationStyle,
           pressed && styles.pressed,
           disabled && styles.disabled,
         ]}
@@ -95,25 +99,26 @@ const styles = StyleSheet.create({
     minWidth: theme.touch.minTarget,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    borderRadius: theme.border.radius,
-    borderWidth: theme.border.width,
+    borderRadius: theme.radius.md,
+    borderWidth: theme.border.subtleWidth,
     alignItems: "center",
     justifyContent: "center",
   },
   primary: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryDark,
+    borderColor: theme.colors.primaryDark,
   },
   accent: {
     backgroundColor: theme.colors.accent,
     borderColor: theme.colors.accent,
   },
   outline: {
-    backgroundColor: theme.colors.surfaceWarm,
+    backgroundColor: theme.colors.surfaceElevated,
     borderColor: theme.colors.primary,
+    ...theme.elevation.sm,
   },
   pressed: {
-    opacity: 0.9,
+    opacity: 0.92,
   },
   disabled: {
     opacity: 0.5,
@@ -126,6 +131,6 @@ const styles = StyleSheet.create({
     color: theme.colors.onPrimary,
   },
   outlineText: {
-    color: theme.colors.primary,
+    color: theme.colors.primaryDark,
   },
 });

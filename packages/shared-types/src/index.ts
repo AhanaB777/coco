@@ -133,6 +133,14 @@ export interface ReminderCreate {
   scheduled_at: string;
 }
 
+export interface ReminderUpdate {
+  title?: string | null;
+  message?: string | null;
+  reminder_type?: ReminderType | null;
+  scheduled_at?: string | null;
+  is_done?: boolean | null;
+}
+
 export interface ProgressMetrics {
   patient_id: string;
   total_sessions: number;

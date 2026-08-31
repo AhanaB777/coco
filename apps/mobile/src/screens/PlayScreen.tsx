@@ -1,10 +1,11 @@
 import { StyleSheet, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import type { AppIconName } from "@/components/AppIcon";
 import { IconTile } from "@/components/IconTile";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
-import type { GameType } from "@/db/schema";
+import type { GameType } from "@/types/api";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import { GAME_LABELS, type RootStackParamList } from "@/navigation/types";
 import { theme } from "@/theme";
@@ -16,25 +17,25 @@ type Props = NativeStackScreenProps<RootStackParamList, "Play">;
 
 const GAMES: {
   type: GameType;
-  icon: "grid-outline" | "list-outline" | "eye-outline";
+  icon: AppIconName;
   accent: string;
   bg: string;
 }[] = [
   {
     type: "memory_match",
-    icon: "grid-outline",
+    icon: "SquaresFour",
     accent: theme.colors.tilePlay,
     bg: theme.colors.tilePlayBg,
   },
   {
     type: "sequence_recall",
-    icon: "list-outline",
+    icon: "ListNumbers",
     accent: theme.colors.tileProgress,
     bg: theme.colors.tileProgressBg,
   },
   {
     type: "object_recognition",
-    icon: "eye-outline",
+    icon: "Scan",
     accent: theme.colors.tileVoice,
     bg: theme.colors.tileVoiceBg,
   },

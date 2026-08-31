@@ -1,71 +1,147 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, Text, View } from "react-native";
 
-import { theme, wovenBorder } from "@/theme";
+import { AppIcon, type AppIconName } from "@/components/AppIcon";
+import { iconMedallion, theme } from "@/theme";
 
 interface WelcomeCardProps {
   name: string;
   message?: string;
 }
 
+interface GreetingTheme {
+  text: string;
+  icon: AppIconName;
+  ink: string;
+  surface: string;
+  wash: string;
+}
+
 export function WelcomeCard({ name, message }: WelcomeCardProps) {
-  const greeting = getGreeting();
+  const greeting = getGreetingTheme();
 
   return (
     <View style={styles.card}>
-      <View style={styles.goldAccent} />
-      <Text style={styles.overline} allowFontScaling>
-        {greeting}
-      </Text>
-      <Text style={styles.name} allowFontScaling accessibilityRole="header">
-        {name}
-      </Text>
-      {message ? (
-        <Text style={styles.message} allowFontScaling>
-          {message}
-        </Text>
-      ) : null}
+      <LinearGradient
+        colors={[theme.colors.surfaceElevated, greeting.wash, greeting.surface]}
+        locations={[0, 0.55, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={styles.orb} />
+
+      <View style={styles.row}>
+        <View style={iconMedallion(greeting.surface)}>
+          <AppIcon
+            name={greeting.icon}
+            size={34}
+            color={greeting.ink}
+            weight="duotone"
+          />
+        </View>
+
+        <View style={styles.content}>
+          <View style={[styles.greetingPill, { backgroundColor: greeting.surface }]}>
+            <Text style={[styles.greeting, { color: greeting.ink }]} allowFontScaling>
+              {greeting.text}
+            </Text>
+          </View>
+
+          <Text style={styles.name} allowFontScaling accessibilityRole="header">
+            {name}
+          </Text>
+
+          {message ? (
+            <Text style={styles.message} allowFontScaling>
+              {message}
+            </Text>
+          ) : null}
+        </View>
+      </View>
     </View>
   );
 }
 
-function getGreeting(): string {
+function getGreetingTheme(): GreetingTheme {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+
+  if (hour < 12) {
+    return {
+      text: "Good morning",
+      icon: "SunHorizon",
+      ink: theme.colors.tileReminders,
+      surface: theme.colors.tileRemindersBg,
+      wash: theme.colors.goldLight,
+    };
+  }
+
+  if (hour < 17) {
+    return {
+      text: "Good afternoon",
+      icon: "Sun",
+      ink: theme.colors.tilePlay,
+      surface: theme.colors.tilePlayBg,
+      wash: theme.colors.tilePlayBg,
+    };
+  }
+
+  return {
+    text: "Good evening",
+    icon: "MoonStars",
+    ink: theme.colors.tileVoice,
+    surface: theme.colors.tileVoiceBg,
+    wash: theme.colors.tileVoiceBg,
+  };
 }
 
 const styles = StyleSheet.create({
   card: {
-    ...wovenBorder,
-    backgroundColor: theme.colors.surfaceWarm,
-    borderColor: theme.colors.goldBorder,
-    borderRadius: theme.border.radius,
+    borderRadius: theme.radius.lg,
+    borderWidth: theme.border.subtleWidth,
+    borderColor: theme.colors.borderSubtle,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
     overflow: "hidden",
+    ...theme.elevation.sm,
   },
-  goldAccent: {
+  orb: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 5,
-    backgroundColor: theme.colors.gold,
+    right: -28,
+    bottom: -28,
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    backgroundColor: "rgba(255, 255, 255, 0.45)",
   },
-  overline: {
-    ...theme.typography.overline,
-    color: theme.colors.primary,
-    marginBottom: theme.spacing.xs,
-    marginTop: theme.spacing.xs,
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+  },
+  content: {
+    flex: 1,
+    gap: 6,
+  },
+  greetingPill: {
+    alignSelf: "flex-start",
+    borderRadius: theme.radius.full,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 6,
+    borderWidth: theme.border.subtleWidth,
+    borderColor: theme.colors.borderSubtle,
+  },
+  greeting: {
+    ...theme.typography.caption,
+    fontFamily: "AtkinsonHyperlegible_700Bold",
+    fontWeight: "600",
+    letterSpacing: 0.2,
   },
   name: {
-    ...theme.typography.title,
+    ...theme.typography.display,
     color: theme.colors.foreground,
   },
   message: {
     ...theme.typography.body,
     color: theme.colors.muted,
-    marginTop: theme.spacing.xs,
+    lineHeight: 26,
   },
 });

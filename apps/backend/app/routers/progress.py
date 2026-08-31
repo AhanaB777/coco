@@ -12,6 +12,14 @@ from app.services.progress import compute_progress_metrics
 router = APIRouter(prefix="/progress", tags=["progress"])
 
 
+@router.get("/me", response_model=ProgressMetrics)
+def get_my_progress(
+    auth: AuthContext = Depends(require_roles(AuthRole.PATIENT)),
+    db: Session = Depends(get_db),
+):
+    return compute_progress_metrics(db, auth.patient_id)
+
+
 @router.get("/{patient_id}", response_model=ProgressMetrics)
 def get_patient_progress(
     patient_id: UUID,
