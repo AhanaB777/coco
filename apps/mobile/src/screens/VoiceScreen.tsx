@@ -6,30 +6,28 @@ import { AppIcon } from "@/components/AppIcon";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
+import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
+import { speakInstructions } from "@/services/speech";
 import {
   getVoiceStateLabel,
   startListening,
   stopListening,
   type VoiceUiState,
 } from "@/services/voice";
-import { speakInstructions } from "@/services/speech";
 import { theme } from "@/theme";
-
-export const VOICE_INSTRUCTIONS =
-  "Tap the large microphone button to start talking. Tap again to stop.";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Voice">;
 
 export function VoiceScreen({ navigation }: Props) {
   const [state, setState] = useState<VoiceUiState>("idle");
+  const { t } = useTranslation();
 
-  useSpeakOnMount(VOICE_INSTRUCTIONS);
+  useSpeakOnMount(t("voice.instructions"));
 
   const handleMicPress = async () => {
     if (state === "idle") {
       setState("listening");
-      // TODO: [voice teammate] wire real STT pipeline
       await startListening((transcript) => {
         console.log("Voice transcript stub:", transcript);
       });
@@ -39,8 +37,7 @@ export function VoiceScreen({ navigation }: Props) {
     if (state === "listening") {
       await stopListening();
       setState("speaking");
-      // TODO: [voice teammate] replace with multilingual TTS response
-      await speakInstructions("Thank you. I heard you.");
+      await speakInstructions(t("voice.thanks"));
       setState("idle");
     }
   };
@@ -55,23 +52,25 @@ export function VoiceScreen({ navigation }: Props) {
   return (
     <ScreenLayout>
       <ScreenHeader
-        title="Voice"
-        subtitle="Talk to Coco"
+        title={t("voice.title")}
+        subtitle={t("voice.subtitle")}
         onHomePress={() => navigation.navigate("Home")}
       />
 
       <View style={styles.container}>
         <Text style={styles.status} allowFontScaling accessibilityLiveRegion="polite">
-          {getVoiceStateLabel(state)}
+          {getVoiceStateLabel(state, t)}
         </Text>
 
         <Pressable
           onPress={handleMicPress}
           accessibilityRole="button"
           accessibilityLabel={
-            state === "listening" ? "Stop listening" : "Start listening"
+            state === "listening"
+              ? t("voice.stopListening")
+              : t("voice.startListening")
           }
-          accessibilityHint="Tap to talk to Coco"
+          accessibilityHint={t("voice.micHint")}
           style={({ pressed }) => [
             styles.micButton,
             state === "listening" && styles.micListening,
@@ -88,7 +87,7 @@ export function VoiceScreen({ navigation }: Props) {
         </Pressable>
 
         <Text style={styles.hint} allowFontScaling>
-          Tap once to listen. Tap again when you are done.
+          {t("voice.hint")}
         </Text>
       </View>
     </ScreenLayout>

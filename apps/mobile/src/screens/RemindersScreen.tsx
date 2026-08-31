@@ -7,13 +7,11 @@ import { ReminderCard } from "@/components/ReminderCard";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
+import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
 import { useAuthStore } from "@/stores/authStore";
 import { useReminderStore } from "@/stores/reminderStore";
 import { theme } from "@/theme";
-
-export const REMINDERS_INSTRUCTIONS =
-  "Here are today's reminders. Tap the checkmark when you finish one.";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Reminders">;
 
@@ -26,8 +24,9 @@ export function RemindersScreen({ navigation }: Props) {
     (state) => state.loadTodayReminders
   );
   const toggleDone = useReminderStore((state) => state.toggleDone);
+  const { t } = useTranslation();
 
-  useSpeakOnMount(REMINDERS_INSTRUCTIONS);
+  useSpeakOnMount(t("reminders.instructions"));
 
   useFocusEffect(
     useCallback(() => {
@@ -40,8 +39,8 @@ export function RemindersScreen({ navigation }: Props) {
   return (
     <ScreenLayout scrollable>
       <ScreenHeader
-        title="Reminders"
-        subtitle="Today's medicine, water, and appointments"
+        title={t("reminders.title")}
+        subtitle={t("reminders.subtitle")}
         onHomePress={() => navigation.navigate("Home")}
       />
 
@@ -50,7 +49,7 @@ export function RemindersScreen({ navigation }: Props) {
           size="large"
           color={theme.colors.primary}
           style={styles.loader}
-          accessibilityLabel="Loading reminders"
+          accessibilityLabel={t("reminders.loading")}
         />
       ) : error ? (
         <View style={styles.empty}>
@@ -61,7 +60,7 @@ export function RemindersScreen({ navigation }: Props) {
       ) : reminders.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText} allowFontScaling>
-            No reminders for today.
+            {t("reminders.empty")}
           </Text>
         </View>
       ) : (

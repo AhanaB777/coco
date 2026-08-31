@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
@@ -29,7 +31,8 @@ class LoginRequest(BaseModel):
 
 
 class PatientLoginRequest(BaseModel):
-    patient_id: str
+    patient_id: Optional[str] = None
+    full_name: Optional[str] = None
     pin: str = Field(min_length=4, max_length=8)
 
 

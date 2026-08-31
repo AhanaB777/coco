@@ -1,18 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
+import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
 import { fetchPatientProgress } from "@/services/progress";
 import { useAuthStore } from "@/stores/authStore";
 import type { ProgressMetrics } from "@/types/api";
 import { goldThreadAccent, surfaceCard, theme } from "@/theme";
-
-export const PROGRESS_INSTRUCTIONS =
-  "Here is your progress. Keep playing to stay active.";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Progress">;
 
@@ -21,6 +19,7 @@ export function ProgressScreen({ navigation }: Props) {
   const [metrics, setMetrics] = useState<ProgressMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!patientId) return;
@@ -33,7 +32,7 @@ export function ProgressScreen({ navigation }: Props) {
         if (active) setMetrics(data);
       })
       .catch(() => {
-        if (active) setError("Could not load progress. Check your connection.");
+        if (active) setError(t("progress.error"));
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -42,23 +41,29 @@ export function ProgressScreen({ navigation }: Props) {
     return () => {
       active = false;
     };
-  }, [patientId]);
+  }, [patientId, t]);
 
-  const summary = metrics
-    ? metrics.total_sessions > 0
-      ? `You have played ${metrics.total_sessions} game${metrics.total_sessions === 1 ? "" : "s"} in total.`
-      : "No games recorded yet. Tap Play on the home screen to start."
-    : "";
+  const summary = useMemo(() => {
+    if (!metrics) return "";
+
+    if (metrics.total_sessions > 0) {
+      return metrics.total_sessions === 1
+        ? t("progress.summaryPlayed", { count: metrics.total_sessions })
+        : t("progress.summaryPlayedPlural", { count: metrics.total_sessions });
+    }
+
+    return t("progress.summaryNone");
+  }, [metrics, t]);
 
   useSpeakOnMount(
-    metrics ? `${summary} ${PROGRESS_INSTRUCTIONS}` : PROGRESS_INSTRUCTIONS
+    metrics ? `${summary} ${t("progress.instructions")}` : t("progress.instructions")
   );
 
   return (
     <ScreenLayout>
       <ScreenHeader
-        title="Progress"
-        subtitle="Your activity summary"
+        title={t("progress.title")}
+        subtitle={t("progress.subtitle")}
         onHomePress={() => navigation.navigate("Home")}
       />
 
@@ -67,7 +72,7 @@ export function ProgressScreen({ navigation }: Props) {
           size="large"
           color={theme.colors.primary}
           style={styles.loader}
-          accessibilityLabel="Loading progress"
+          accessibilityLabel={t("progress.loading")}
         />
       ) : error ? (
         <View style={styles.card}>
@@ -78,8 +83,8 @@ export function ProgressScreen({ navigation }: Props) {
       ) : metrics ? (
         <View style={styles.card}>
           <View style={styles.goldAccent} />
-          <Text style={styles.celebration} allowFontScaling accessibilityLabel="Celebration">
-            Well done!
+          <Text style={styles.celebration} allowFontScaling>
+            {t("progress.wellDone")}
           </Text>
           <Text style={styles.summary} allowFontScaling>
             {summary}
@@ -90,7 +95,7 @@ export function ProgressScreen({ navigation }: Props) {
                 {metrics.total_sessions}
               </Text>
               <Text style={styles.statLabel} allowFontScaling>
-                Sessions
+                {t("progress.sessions")}
               </Text>
             </View>
             <View style={styles.statDivider} />
@@ -99,7 +104,7 @@ export function ProgressScreen({ navigation }: Props) {
                 {metrics.average_score}
               </Text>
               <Text style={styles.statLabel} allowFontScaling>
-                Avg score
+                {t("progress.avgScore")}
               </Text>
             </View>
             <View style={styles.statDivider} />
@@ -108,7 +113,7 @@ export function ProgressScreen({ navigation }: Props) {
                 {metrics.streak_days}
               </Text>
               <Text style={styles.statLabel} allowFontScaling>
-                Day streak
+                {t("progress.dayStreak")}
               </Text>
             </View>
           </View>

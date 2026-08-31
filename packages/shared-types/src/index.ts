@@ -36,7 +36,8 @@ export interface LoginRequest {
 }
 
 export interface PatientLoginRequest {
-  patient_id: string;
+  patient_id?: string;
+  full_name?: string;
   pin: string;
 }
 

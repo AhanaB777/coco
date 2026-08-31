@@ -1,0 +1,140 @@
+import type { Translations } from "@/i18n/types";
+
+export const en: Translations = {
+  common: {
+    home: "Home",
+    settings: "Settings",
+    signOut: "Sign out",
+    continue: "Continue",
+    loading: "Loading",
+    friend: "Friend",
+  },
+  splash: {
+    instructions:
+      "Welcome to Coco. Your memory care companion for North East India.",
+    badge: "Coco",
+    title: "Memory care companion",
+    subtitle:
+      "Cognitive games and gentle reminders for families across the North East",
+    loading: "Loading",
+  },
+  login: {
+    tagline: "North East India · Memory care",
+    signIn: "Sign in",
+    enterNameSubtitle: "Enter your name to continue",
+    enterPin: "Enter PIN",
+    usernameInstructions:
+      "Enter your name, then tap Continue to enter your PIN.",
+    pinInstructions: "Enter your four digit PIN using the number pad.",
+    pinFor: "Enter PIN for {{name}}.",
+    namePlaceholder: "Your name",
+    nameAccessibilityHint: "Enter the name on your care profile",
+    nameRequired: "Please enter your name.",
+    loginError: "Name or PIN is incorrect. Please try again.",
+    changeName: "Not you? Change name",
+    changeNameAccessibility: "Change name",
+    signingIn: "Signing in",
+    continueHint: "Go to PIN entry",
+  },
+  home: {
+    instructions:
+      "Tap Play for games, Reminders for today's tasks, Progress to see your activity, Voice to talk, or Settings to change language.",
+    welcomeBack: "Welcome back, {{name}}.",
+    welcomeMessage: "What would you like to do today?",
+    play: "Play",
+    reminders: "Reminders",
+    progress: "Progress",
+    voice: "Voice",
+    playHint: "Open cognitive games",
+    remindersHint: "View today's reminders",
+    progressHint: "See your daily progress",
+    voiceHint: "Open voice assistant",
+    settingsHint: "Open settings to change language or sign out",
+    greetingMorning: "Good morning",
+    greetingAfternoon: "Good afternoon",
+    greetingEvening: "Good evening",
+  },
+  settings: {
+    instructions:
+      "Settings. Choose the language for the app and the narrator voice.",
+    title: "Settings",
+    subtitle: "Language and account",
+    languageTitle: "App language",
+    languageHint:
+      "Changes on-screen text and the voice that reads instructions aloud.",
+    assameseFallback:
+      "Uses Bengali voice if Assamese is not on your device.",
+    languageSet: "Language updated.",
+    signOutHint: "Sign out and return to the login screen",
+  },
+  play: {
+    instructions: "Choose a game to play. Tap a game card to begin.",
+    title: "Play",
+    subtitle: "Memory, attention, and recognition games",
+    gameHint: "Open {{game}} game",
+  },
+  games: {
+    memory_match: "Memory Match",
+    sequence_recall: "Sequence Recall",
+    object_recognition: "Object Recognition",
+  },
+  gameStub: {
+    instructions: "This game is coming soon. Your teammate will add the game here.",
+    subtitle: "Game coming soon",
+    title: "Coming soon",
+    body: "The {{game}} game will appear in this space. A practice session has been saved to your progress.",
+    back: "Back to games",
+    backHint: "Return to the game list",
+  },
+  reminders: {
+    instructions:
+      "Here are today's reminders. Tap the checkmark when you finish one.",
+    title: "Reminders",
+    subtitle: "Today's medicine, water, and appointments",
+    loading: "Loading reminders",
+    empty: "No reminders for today.",
+    markDone: "Mark {{title}} as done",
+    markNotDone: "Mark {{title}} as not done",
+  },
+  reminderTypes: {
+    medicine: "Medicine",
+    hydration: "Hydration",
+    activity: "Activity",
+    appointment: "Appointment",
+  },
+  progress: {
+    instructions: "Here is your progress. Keep playing to stay active.",
+    title: "Progress",
+    subtitle: "Your activity summary",
+    loading: "Loading progress",
+    error: "Could not load progress. Check your connection.",
+    wellDone: "Well done!",
+    sessions: "Sessions",
+    avgScore: "Avg score",
+    dayStreak: "Day streak",
+    summaryPlayed: "You have played {{count}} game in total.",
+    summaryPlayedPlural: "You have played {{count}} games in total.",
+    summaryNone: "No games recorded yet. Tap Play on the home screen to start.",
+  },
+  voice: {
+    instructions:
+      "Tap the large microphone button to start talking. Tap again to stop.",
+    title: "Voice",
+    subtitle: "Talk to Coco",
+    hint: "Tap once to listen. Tap again when you are done.",
+    startListening: "Start listening",
+    stopListening: "Stop listening",
+    micHint: "Tap to talk to Coco",
+    idle: "Tap microphone to talk",
+    listening: "Listening",
+    speaking: "Speaking",
+    thanks: "Thank you. I heard you.",
+  },
+  pin: {
+    delete: "Delete",
+    pinLength: "PIN length {{current}} of {{max}}",
+  },
+  screenHeader: {
+    homeHint: "Return to the main menu",
+  },
+};

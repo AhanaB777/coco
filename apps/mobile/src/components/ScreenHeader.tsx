@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 
 import { BigButton } from "@/components/BigButton";
+import { useTranslation } from "@/i18n";
 import { theme } from "@/theme";
 
 interface ScreenHeaderProps {
@@ -16,6 +17,8 @@ export function ScreenHeader({
   onHomePress,
   subtitle,
 }: ScreenHeaderProps) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
@@ -34,10 +37,10 @@ export function ScreenHeader({
 
       {showHome && onHomePress ? (
         <BigButton
-          label="Home"
+          label={t("common.home")}
           onPress={onHomePress}
           variant="outline"
-          accessibilityHint="Return to the main menu"
+          accessibilityHint={t("screenHeader.homeHint")}
           style={styles.homeButton}
         />
       ) : null}

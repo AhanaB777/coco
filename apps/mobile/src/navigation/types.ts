@@ -9,10 +9,5 @@ export type RootStackParamList = {
   Reminders: undefined;
   Progress: undefined;
   Voice: undefined;
-};
-
-export const GAME_LABELS: Record<GameType, string> = {
-  memory_match: "Memory Match",
-  sequence_recall: "Sequence Recall",
-  object_recognition: "Object Recognition",
+  Settings: undefined;
 };

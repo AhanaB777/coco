@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.deps import AuthContext, get_current_auth, require_roles
@@ -75,12 +76,29 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 @router.post("/patient-login", response_model=Token)
 def patient_login(payload: PatientLoginRequest, db: Session = Depends(get_db)):
-    try:
-        patient_id = UUID(payload.patient_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid patient ID")
+    has_id = bool(payload.patient_id and payload.patient_id.strip())
+    has_name = bool(payload.full_name and payload.full_name.strip())
 
-    patient = db.get(Patient, patient_id)
+    if has_id == has_name:
+        raise HTTPException(
+            status_code=400,
+            detail="Provide exactly one of patient_id or full_name",
+        )
+
+    if has_id:
+        try:
+            patient_id = UUID(payload.patient_id)  # type: ignore[arg-type]
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid patient ID")
+        patient = db.get(Patient, patient_id)
+    else:
+        normalized_name = payload.full_name.strip()  # type: ignore[union-attr]
+        patient = (
+            db.query(Patient)
+            .filter(func.lower(Patient.full_name) == normalized_name.lower())
+            .first()
+        )
+
     if patient is None or patient.pin_hash is None:
         raise HTTPException(status_code=401, detail="Invalid patient or PIN")
 

@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AppIcon } from "@/components/AppIcon";
+import { useTranslation } from "@/i18n";
 import { theme } from "@/theme";
 
 interface PinPadProps {
@@ -18,6 +19,8 @@ export function PinPad({
   onChange,
   onComplete,
 }: PinPadProps) {
+  const { t } = useTranslation();
+
   const handleKey = (key: string) => {
     if (key === "back") {
       onChange(value.slice(0, -1));
@@ -36,7 +39,10 @@ export function PinPad({
     <View style={styles.container}>
       <View
         style={styles.dots}
-        accessibilityLabel={`PIN length ${value.length} of ${maxLength}`}
+        accessibilityLabel={t("pin.pinLength", {
+          current: value.length,
+          max: maxLength,
+        })}
       >
         {Array.from({ length: maxLength }).map((_, index) => (
           <View
@@ -53,7 +59,7 @@ export function PinPad({
           }
 
           const isBack = key === "back";
-          const label = isBack ? "Delete" : key;
+          const label = isBack ? t("pin.delete") : key;
 
           return (
             <Pressable

@@ -6,22 +6,21 @@ import { BigButton } from "@/components/BigButton";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
-import { GAME_LABELS, type RootStackParamList } from "@/navigation/types";
+import { useTranslation } from "@/i18n";
+import type { RootStackParamList } from "@/navigation/types";
 import { launchGame } from "@/services/games";
 import { useAuthStore } from "@/stores/authStore";
 import { goldThreadAccent, surfaceCard, theme } from "@/theme";
-
-export const GAME_STUB_INSTRUCTIONS =
-  "This game is coming soon. Your teammate will add the game here.";
 
 type Props = NativeStackScreenProps<RootStackParamList, "GameStub">;
 
 export function GameStubScreen({ navigation, route }: Props) {
   const { gameType } = route.params;
-  const gameLabel = GAME_LABELS[gameType];
   const patientId = useAuthStore((state) => state.patientId);
+  const { t, gameLabel } = useTranslation();
+  const label = gameLabel(gameType);
 
-  useSpeakOnMount(`${gameLabel}. ${GAME_STUB_INSTRUCTIONS}`);
+  useSpeakOnMount(`${label}. ${t("gameStub.instructions")}`);
 
   useEffect(() => {
     if (patientId) {
@@ -34,26 +33,25 @@ export function GameStubScreen({ navigation, route }: Props) {
   return (
     <ScreenLayout>
       <ScreenHeader
-        title={gameLabel}
-        subtitle="Game coming soon"
+        title={label}
+        subtitle={t("gameStub.subtitle")}
         onHomePress={() => navigation.navigate("Home")}
       />
 
       <View style={styles.card}>
         <View style={styles.goldAccent} />
         <Text style={styles.title} allowFontScaling>
-          Coming soon
+          {t("gameStub.title")}
         </Text>
         <Text style={styles.body} allowFontScaling>
-          The {gameLabel} game will appear in this space. A practice session has
-          been saved to your progress.
+          {t("gameStub.body", { game: label })}
         </Text>
 
         <BigButton
-          label="Back to games"
+          label={t("gameStub.back")}
           variant="outline"
           onPress={() => navigation.navigate("Play")}
-          accessibilityHint="Return to the game list"
+          accessibilityHint={t("gameStub.backHint")}
         />
       </View>
     </ScreenLayout>

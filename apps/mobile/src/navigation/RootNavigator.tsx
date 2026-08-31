@@ -7,6 +7,7 @@ import { LoginPinScreen } from "@/screens/LoginPinScreen";
 import { PlayScreen } from "@/screens/PlayScreen";
 import { ProgressScreen } from "@/screens/ProgressScreen";
 import { RemindersScreen } from "@/screens/RemindersScreen";
+import { SettingsScreen } from "@/screens/SettingsScreen";
 import { SplashScreen } from "@/screens/SplashScreen";
 import { VoiceScreen } from "@/screens/VoiceScreen";
 
@@ -30,6 +31,7 @@ export function RootNavigator() {
       <Stack.Screen name="GameStub" component={GameStubScreen} />
       <Stack.Screen name="Progress" component={ProgressScreen} />
       <Stack.Screen name="Voice" component={VoiceScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );
 }

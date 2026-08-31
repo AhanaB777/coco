@@ -1,0 +1,140 @@
+import type { Translations } from "@/i18n/types";
+
+export const bn: Translations = {
+  common: {
+    home: "হোম",
+    settings: "সেটিংস",
+    signOut: "সাইন আউট",
+    continue: "এগিয়ে যান",
+    loading: "লোড হচ্ছে",
+    friend: "বন্ধু",
+  },
+  splash: {
+    instructions:
+      "কোকোতে স্বাগতম। উত্তর-পূর্ব ভারতের জন্য আপনার স্মৃতি যত্ন সঙ্গী।",
+    badge: "কোকো",
+    title: "স্মৃতি যত্ন সঙ্গী",
+    subtitle:
+      "উত্তর-পূর্বের পরিবারের জন্য জ্ঞানমূলক খেলা ও নরম অনুস্মারক",
+    loading: "লোড হচ্ছে",
+  },
+  login: {
+    tagline: "উত্তর-পূর্ব ভারত · স্মৃতি যত্ন",
+    signIn: "সাইন ইন",
+    enterNameSubtitle: "এগিয়ে যেতে আপনার নাম লিখুন",
+    enterPin: "পিন দিন",
+    usernameInstructions:
+      "আপনার নাম লিখুন, তারপর পিন দিতে এগিয়ে যান ট্যাপ করুন।",
+    pinInstructions: "নম্বর প্যাড দিয়ে আপনার চার অঙ্কের পিন দিন।",
+    pinFor: "{{name}} এর জন্য পিন দিন।",
+    namePlaceholder: "আপনার নাম",
+    nameAccessibilityHint: "আপনার যত্ন প্রোফাইলের নাম লিখুন",
+    nameRequired: "অনুগ্রহ করে আপনার নাম লিখুন।",
+    loginError: "নাম বা পিন ভুল। আবার চেষ্টা করুন।",
+    changeName: "আপনি নন? নাম বদলান",
+    changeNameAccessibility: "নাম বদলান",
+    signingIn: "সাইন ইন হচ্ছে",
+    continueHint: "পিন দেওয়ার ধাপে যান",
+  },
+  home: {
+    instructions:
+      "খেলার জন্য খেলুন, আজকের কাজের জন্য অনুস্মারক, কার্যকলাপের জন্য অগ্রগতি, কথা বলতে কণ্ঠ, বা ভাষা বদলাতে সেটিংস ট্যাপ করুন।",
+    welcomeBack: "আবার স্বাগতম, {{name}}।",
+    welcomeMessage: "আজ আপনি কী করতে চান?",
+    play: "খেলুন",
+    reminders: "অনুস্মারক",
+    progress: "অগ্রগতি",
+    voice: "কণ্ঠ",
+    playHint: "জ্ঞানমূলক খেলা খুলুন",
+    remindersHint: "আজকের অনুস্মারক দেখুন",
+    progressHint: "দৈনিক অগ্রগতি দেখুন",
+    voiceHint: "কণ্ঠ সহায়ক খুলুন",
+    settingsHint: "ভাষা বদলাতে বা সাইন আউট করতে সেটিংস খুলুন",
+    greetingMorning: "সুপ্রভাত",
+    greetingAfternoon: "শুভ অপরাহ্ন",
+    greetingEvening: "শুভ সন্ধ্যা",
+  },
+  settings: {
+    instructions:
+      "সেটিংস। অ্যাপ ও কণ্ঠের ভাষা বেছে নিন।",
+    title: "সেটিংস",
+    subtitle: "ভাষা ও অ্যাকাউন্ট",
+    languageTitle: "অ্যাপের ভাষা",
+    languageHint:
+      "স্ক্রিনের লেখা ও নির্দেশ পড়ার কণ্ঠ দুটোই বদলায়।",
+    assameseFallback:
+      "আপনার ফোনে অসমীয়া কণ্ঠ না থাকলে বাংলা কণ্ঠ ব্যবহার হয়।",
+    languageSet: "ভাষা আপডেট হয়েছে।",
+    signOutHint: "সাইন আউট করে লগইন স্ক্রিনে যান",
+  },
+  play: {
+    instructions: "খেলতে একটি খেলা বেছে নিন। শুরু করতে কার্ডে ট্যাপ করুন।",
+    title: "খেলুন",
+    subtitle: "স্মৃতি, মনোযোগ ও চেনার খেলা",
+    gameHint: "{{game}} খেলা খুলুন",
+  },
+  games: {
+    memory_match: "স্মৃতি মিল",
+    sequence_recall: "ক্রম স্মরণ",
+    object_recognition: "বস্তু চেনা",
+  },
+  gameStub: {
+    instructions: "এই খেলা শীঘ্রই আসছে।",
+    subtitle: "খেলা শীঘ্রই আসবে",
+    title: "শীঘ্রই আসছে",
+    body: "{{game}} খেলা এখানে দেখা যাবে। একটি অনুশীলন সেশন আপনার অগ্রগতিতে সংরক্ষিত হয়েছে।",
+    back: "খেলায় ফিরে যান",
+    backHint: "খেলার তালিকায় ফিরে যান",
+  },
+  reminders: {
+    instructions:
+      "এগুলো আজকের অনুস্মারক। শেষ হলে চেকমার্কে ট্যাপ করুন।",
+    title: "অনুস্মারক",
+    subtitle: "আজকের ওষুধ, জল ও অ্যাপয়েন্টমেন্ট",
+    loading: "অনুস্মারক লোড হচ্ছে",
+    empty: "আজ কোনো অনুস্মারক নেই।",
+    markDone: "{{title}} সম্পন্ন চিহ্নিত করুন",
+    markNotDone: "{{title}} অসম্পন্ন চিহ্নিত করুন",
+  },
+  reminderTypes: {
+    medicine: "ওষুধ",
+    hydration: "জল",
+    activity: "কার্যকলাপ",
+    appointment: "অ্যাপয়েন্টমেন্ট",
+  },
+  progress: {
+    instructions: "এটি আপনার অগ্রগতি। সক্রিয় থাকতে খেলতে থাকুন।",
+    title: "অগ্রগতি",
+    subtitle: "আপনার কার্যকলাপের সারাংশ",
+    loading: "অগ্রগতি লোড হচ্ছে",
+    error: "অগ্রগতি লোড হয়নি। সংযোগ পরীক্ষা করুন।",
+    wellDone: "খুব ভালো!",
+    sessions: "সেশন",
+    avgScore: "গড় স্কোর",
+    dayStreak: "দিনের ধারা",
+    summaryPlayed: "আপনি মোট {{count}}টি খেলা খেলেছেন।",
+    summaryPlayedPlural: "আপনি মোট {{count}}টি খেলা খেলেছেন।",
+    summaryNone: "এখনও কোনো খেলা নেই। শুরু করতে হোমে খেলুন ট্যাপ করুন।",
+  },
+  voice: {
+    instructions:
+      "কথা বলতে বড় মাইক বোতামে ট্যাপ করুন। বন্ধ করতে আবার ট্যাপ করুন।",
+    title: "কণ্ঠ",
+    subtitle: "কোকোর সাথে কথা বলুন",
+    hint: "শুনতে একবার ট্যাপ করুন। শেষ হলে আবার ট্যাপ করুন।",
+    startListening: "শোনা শুরু করুন",
+    stopListening: "শোনা বন্ধ করুন",
+    micHint: "কোকোর সাথে কথা বলতে ট্যাপ করুন",
+    idle: "কথা বলতে মাইক্রোফোন ট্যাপ করুন",
+    listening: "শুনছে",
+    speaking: "বলছে",
+    thanks: "ধন্যবাদ। আমি শুনেছি।",
+  },
+  pin: {
+    delete: "মুছুন",
+    pinLength: "পিন দৈর্ঘ্য {{current}} / {{max}}",
+  },
+  screenHeader: {
+    homeHint: "মূল মেনুতে ফিরে যান",
+  },
+};

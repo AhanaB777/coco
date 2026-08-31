@@ -2,61 +2,76 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { DEFAULT_PATIENT_ID, DEFAULT_PATIENT_NAME } from "@/constants/patient";
+import type { NarratorLanguageCode } from "@/constants/narratorLanguages";
+import { normalizeNarratorLanguageCode } from "@/constants/narratorLanguages";
 
 interface AuthState {
-  /** Device-bound backend patient UUID */
   patientId: string | null;
   patientName: string | null;
+  loginUsername: string | null;
   preferredLanguage: string | null;
   accessToken: string | null;
   isAuthenticated: boolean;
   hasHydrated: boolean;
 
-  /** Bind this device to a single patient account (dev/setup). */
-  bindPatient: (patientId: string) => void;
   setSession: (params: {
     accessToken: string;
     patientId: string;
     patientName: string;
+    loginUsername: string;
     preferredLanguage?: string | null;
   }) => void;
+  setPreferredLanguage: (code: NarratorLanguageCode) => void;
+  /** Clear token only — keeps saved username for re-login after expiry */
   clearSession: () => void;
+  /** Full sign-out — clears saved login */
+  signOut: () => void;
   setHasHydrated: (value: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      patientId: DEFAULT_PATIENT_ID,
-      patientName: DEFAULT_PATIENT_NAME,
+      patientId: null,
+      patientName: null,
+      loginUsername: null,
       preferredLanguage: null,
       accessToken: null,
       isAuthenticated: false,
       hasHydrated: false,
 
-      bindPatient: (patientId) =>
-        set({
-          patientId,
-          patientName: null,
-          preferredLanguage: null,
-          accessToken: null,
-          isAuthenticated: false,
-        }),
-
-      setSession: ({ accessToken, patientId, patientName, preferredLanguage }) =>
+      setSession: ({
+        accessToken,
+        patientId,
+        patientName,
+        loginUsername,
+        preferredLanguage,
+      }) =>
         set({
           accessToken,
           patientId,
           patientName,
-          preferredLanguage: preferredLanguage ?? null,
+          loginUsername,
+          preferredLanguage: normalizeNarratorLanguageCode(preferredLanguage),
           isAuthenticated: true,
         }),
+
+      setPreferredLanguage: (code) =>
+        set({ preferredLanguage: normalizeNarratorLanguageCode(code) }),
 
       clearSession: () =>
         set({
           accessToken: null,
           isAuthenticated: false,
+        }),
+
+      signOut: () =>
+        set({
+          accessToken: null,
+          isAuthenticated: false,
+          patientId: null,
+          patientName: null,
+          loginUsername: null,
         }),
 
       setHasHydrated: (value) => set({ hasHydrated: value }),
@@ -67,6 +82,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         patientId: state.patientId,
         patientName: state.patientName,
+        loginUsername: state.loginUsername,
         preferredLanguage: state.preferredLanguage,
         accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
@@ -81,4 +97,10 @@ export const useAuthStore = create<AuthState>()(
 /** @deprecated Use patientId from auth store */
 export function useActiveProfileId(): string | null {
   return useAuthStore((s) => s.patientId);
+}
+
+export function getPreferredNarratorLanguage(): NarratorLanguageCode {
+  return normalizeNarratorLanguageCode(
+    useAuthStore.getState().preferredLanguage
+  );
 }

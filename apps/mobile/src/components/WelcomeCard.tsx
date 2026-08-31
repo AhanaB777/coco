@@ -2,6 +2,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, Text, View } from "react-native";
 
 import { AppIcon, type AppIconName } from "@/components/AppIcon";
+import { useTranslation } from "@/i18n";
 import { iconMedallion, theme } from "@/theme";
 
 interface WelcomeCardProps {
@@ -18,7 +19,8 @@ interface GreetingTheme {
 }
 
 export function WelcomeCard({ name, message }: WelcomeCardProps) {
-  const greeting = getGreetingTheme();
+  const { t } = useTranslation();
+  const greeting = getGreetingTheme(t);
 
   return (
     <View style={styles.card}>
@@ -61,12 +63,12 @@ export function WelcomeCard({ name, message }: WelcomeCardProps) {
   );
 }
 
-function getGreetingTheme(): GreetingTheme {
+function getGreetingTheme(t: (path: string) => string): GreetingTheme {
   const hour = new Date().getHours();
 
   if (hour < 12) {
     return {
-      text: "Good morning",
+      text: t("home.greetingMorning"),
       icon: "SunHorizon",
       ink: theme.colors.tileReminders,
       surface: theme.colors.tileRemindersBg,
@@ -76,7 +78,7 @@ function getGreetingTheme(): GreetingTheme {
 
   if (hour < 17) {
     return {
-      text: "Good afternoon",
+      text: t("home.greetingAfternoon"),
       icon: "Sun",
       ink: theme.colors.tilePlay,
       surface: theme.colors.tilePlayBg,
@@ -85,7 +87,7 @@ function getGreetingTheme(): GreetingTheme {
   }
 
   return {
-    text: "Good evening",
+    text: t("home.greetingEvening"),
     icon: "MoonStars",
     ink: theme.colors.tileVoice,
     surface: theme.colors.tileVoiceBg,

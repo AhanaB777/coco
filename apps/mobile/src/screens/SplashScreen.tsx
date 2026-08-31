@@ -6,31 +6,62 @@ import { CocoMark } from "@/components/CocoMark";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { TopAccent } from "@/components/TopAccent";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
+import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
+import { fetchAuthMe } from "@/services/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { theme, logoPedestal } from "@/theme";
-
-export const SPLASH_INSTRUCTIONS =
-  "Welcome to Coco. Your memory care companion for North East India.";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
 
 export function SplashScreen({ navigation }: Props) {
   const hasHydrated = useAuthStore((state) => state.hasHydrated);
+  const { t } = useTranslation();
 
-  useSpeakOnMount(SPLASH_INSTRUCTIONS);
+  useSpeakOnMount(t("splash.instructions"));
 
   useEffect(() => {
     if (!hasHydrated) return;
 
-    // Require PIN on each launch; keep remembered patient identity.
-    useAuthStore.getState().clearSession();
+    let cancelled = false;
 
-    const timer = setTimeout(() => {
+    async function bootstrap() {
+      await new Promise((resolve) => setTimeout(resolve, 1400));
+
+      if (cancelled) return;
+
+      const { isAuthenticated, accessToken, setSession, clearSession } =
+        useAuthStore.getState();
+
+      if (isAuthenticated && accessToken) {
+        try {
+          const me = await fetchAuthMe();
+          const patient = me.patient;
+
+          if (patient) {
+            setSession({
+              accessToken,
+              patientId: patient.id,
+              patientName: patient.full_name,
+              loginUsername: patient.full_name,
+              preferredLanguage: patient.preferred_language,
+            });
+            navigation.replace("Home");
+            return;
+          }
+        } catch {
+          clearSession();
+        }
+      }
+
       navigation.replace("LoginPin");
-    }, 1400);
+    }
 
-    return () => clearTimeout(timer);
+    bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
   }, [hasHydrated, navigation]);
 
   return (
@@ -41,19 +72,19 @@ export function SplashScreen({ navigation }: Props) {
           <CocoMark size="lg" />
         </View>
         <Text style={styles.badge} allowFontScaling>
-          Coco
+          {t("splash.badge")}
         </Text>
         <Text style={styles.title} allowFontScaling accessibilityRole="header">
-          Memory care companion
+          {t("splash.title")}
         </Text>
         <Text style={styles.subtitle} allowFontScaling>
-          Cognitive games and gentle reminders for families across the North East
+          {t("splash.subtitle")}
         </Text>
         <ActivityIndicator
           size="large"
           color={theme.colors.primary}
           style={styles.loader}
-          accessibilityLabel="Loading"
+          accessibilityLabel={t("splash.loading")}
         />
       </View>
     </ScreenLayout>

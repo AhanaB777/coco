@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AppIcon } from "@/components/AppIcon";
 import type { ReminderType } from "@/types/api";
+import { useTranslation } from "@/i18n";
 import { surfaceCard, theme } from "@/theme";
 
 interface ReminderCardProps {
@@ -12,13 +13,6 @@ interface ReminderCardProps {
   onToggleDone: () => void;
 }
 
-const TYPE_LABELS: Record<ReminderType, string> = {
-  medicine: "Medicine",
-  hydration: "Hydration",
-  activity: "Activity",
-  appointment: "Appointment",
-};
-
 export function ReminderCard({
   title,
   reminderType,
@@ -26,6 +20,8 @@ export function ReminderCard({
   isDone,
   onToggleDone,
 }: ReminderCardProps) {
+  const { t, reminderTypeLabel } = useTranslation();
+
   const timeLabel = new Date(scheduledAt).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -36,7 +32,7 @@ export function ReminderCard({
       <View style={styles.content}>
         <View style={styles.badge}>
           <Text style={styles.badgeText} allowFontScaling>
-            {TYPE_LABELS[reminderType]}
+            {reminderTypeLabel(reminderType)}
           </Text>
         </View>
         <Text
@@ -54,7 +50,9 @@ export function ReminderCard({
         onPress={onToggleDone}
         accessibilityRole="checkbox"
         accessibilityLabel={
-          isDone ? `Mark ${title} as not done` : `Mark ${title} as done`
+          isDone
+            ? t("reminders.markNotDone", { title })
+            : t("reminders.markDone", { title })
         }
         accessibilityState={{ checked: isDone }}
         style={({ pressed }) => [

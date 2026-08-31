@@ -4,7 +4,6 @@ type TranscriptHandler = (text: string) => void;
 
 let transcriptHandler: TranscriptHandler | null = null;
 
-// TODO: [voice teammate] wire STT (on-device or Groq) and TTS response pipeline
 export async function startListening(
   onTranscript: TranscriptHandler
 ): Promise<void> {
@@ -16,19 +15,21 @@ export async function stopListening(): Promise<void> {
 }
 
 export async function speakResponse(text: string): Promise<void> {
-  // TODO: [voice teammate] replace with multilingual TTS
   if (transcriptHandler) {
     transcriptHandler(text);
   }
 }
 
-export function getVoiceStateLabel(state: VoiceUiState): string {
+export function getVoiceStateLabel(
+  state: VoiceUiState,
+  t: (path: string) => string
+): string {
   switch (state) {
     case "listening":
-      return "Listening";
+      return t("voice.listening");
     case "speaking":
-      return "Speaking";
+      return t("voice.speaking");
     default:
-      return "Tap microphone to talk";
+      return t("voice.idle");
   }
 }

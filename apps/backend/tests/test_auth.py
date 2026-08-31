@@ -41,6 +41,15 @@ def test_patient_pin_login(client):
     assert response.json()["token_type"] == "bearer"
 
 
+def test_patient_pin_login_by_name(client):
+    response = client.post(
+        "/api/v1/auth/patient-login",
+        json={"full_name": "Lakshmi Devi", "pin": "1234"},
+    )
+    assert response.status_code == 200
+    assert response.json()["token_type"] == "bearer"
+
+
 def test_auth_me_caregiver(client):
     login = client.post(
         "/api/v1/auth/login",

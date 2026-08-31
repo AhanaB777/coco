@@ -1,0 +1,140 @@
+import type { Translations } from "@/i18n/types";
+
+export const hi: Translations = {
+  common: {
+    home: "होम",
+    settings: "सेटिंग्स",
+    signOut: "साइन आउट",
+    continue: "आगे बढ़ें",
+    loading: "लोड हो रहा है",
+    friend: "मित्र",
+  },
+  splash: {
+    instructions:
+      "कोको में आपका स्वागत है। उत्तर पूर्व भारत के लिए आपका स्मृति देखभाल साथी।",
+    badge: "कोको",
+    title: "स्मृति देखभाल साथी",
+    subtitle:
+      "उत्तर पूर्व के परिवारों के लिए संज्ञानात्मक खेल और कोमल अनुस्मारक",
+    loading: "लोड हो रहा है",
+  },
+  login: {
+    tagline: "उत्तर पूर्व भारत · स्मृति देखभाल",
+    signIn: "साइन इन",
+    enterNameSubtitle: "जारी रखने के लिए अपना नाम लिखें",
+    enterPin: "पिन दर्ज करें",
+    usernameInstructions:
+      "अपना नाम लिखें, फिर पिन दर्ज करने के लिए आगे बढ़ें पर टैप करें।",
+    pinInstructions: "नंबर पैड से अपना चार अंकों का पिन दर्ज करें।",
+    pinFor: "{{name}} के लिए पिन दर्ज करें।",
+    namePlaceholder: "आपका नाम",
+    nameAccessibilityHint: "अपनी देखभाल प्रोफ़ाइल पर दर्ज नाम लिखें",
+    nameRequired: "कृपया अपना नाम लिखें।",
+    loginError: "नाम या पिन गलत है। कृपया फिर से कोशिश करें।",
+    changeName: "आप नहीं हैं? नाम बदलें",
+    changeNameAccessibility: "नाम बदलें",
+    signingIn: "साइन इन हो रहा है",
+    continueHint: "पिन दर्ज करने के लिए जाएं",
+  },
+  home: {
+    instructions:
+      "खेल के लिए खेलें, आज के कार्यों के लिए अनुस्मारक, गतिविधि के लिए प्रगति, बातचीत के लिए आवाज़, या भाषा बदलने के लिए सेटिंग्स पर टैप करें।",
+    welcomeBack: "वापसी पर स्वागत है, {{name}}।",
+    welcomeMessage: "आज आप क्या करना चाहेंगे?",
+    play: "खेलें",
+    reminders: "अनुस्मारक",
+    progress: "प्रगति",
+    voice: "आवाज़",
+    playHint: "संज्ञानात्मक खेल खोलें",
+    remindersHint: "आज के अनुस्मारक देखें",
+    progressHint: "अपनी दैनिक प्रगति देखें",
+    voiceHint: "आवाज़ सहायक खोलें",
+    settingsHint: "भाषा बदलने या साइन आउट के लिए सेटिंग्स खोलें",
+    greetingMorning: "सुप्रभात",
+    greetingAfternoon: "नमस्कार",
+    greetingEvening: "शुभ संध्या",
+  },
+  settings: {
+    instructions:
+      "सेटिंग्स। ऐप और बोलने वाली आवाज़ की भाषा चुनें।",
+    title: "सेटिंग्स",
+    subtitle: "भाषा और खाता",
+    languageTitle: "ऐप की भाषा",
+    languageHint:
+      "स्क्रीन पर दिखने वाला पाठ और निर्देश पढ़ने वाली आवाज़ बदलती है।",
+    assameseFallback:
+      "यदि आपके फ़ोन पर असमिया आवाज़ नहीं है तो बंगाली आवाज़ का उपयोग होगा।",
+    languageSet: "भाषा अपडेट हो गई।",
+    signOutHint: "साइन आउट करें और लॉगिन स्क्रीन पर जाएं",
+  },
+  play: {
+    instructions: "खेलने के लिए एक खेल चुनें। शुरू करने के लिए कार्ड पर टैप करें।",
+    title: "खेलें",
+    subtitle: "स्मृति, ध्यान और पहचान के खेल",
+    gameHint: "{{game}} खेल खोलें",
+  },
+  games: {
+    memory_match: "स्मृति मिलान",
+    sequence_recall: "क्रम याद",
+    object_recognition: "वस्तु पहचान",
+  },
+  gameStub: {
+    instructions: "यह खेल जल्द आ रहा है।",
+    subtitle: "खेल जल्द आएगा",
+    title: "जल्द आ रहा है",
+    body: "{{game}} खेल यहाँ दिखेगा। एक अभ्यास सत्र आपकी प्रगति में सहेजा गया है।",
+    back: "खेलों पर वापस",
+    backHint: "खेल सूची पर लौटें",
+  },
+  reminders: {
+    instructions:
+      "ये आज के अनुस्मारक हैं। पूरा करने पर चेकमार्क पर टैप करें।",
+    title: "अनुस्मारक",
+    subtitle: "आज की दवा, पानी और अपॉइंटमेंट",
+    loading: "अनुस्मारक लोड हो रहे हैं",
+    empty: "आज कोई अनुस्मारक नहीं है।",
+    markDone: "{{title}} को पूरा चिह्नित करें",
+    markNotDone: "{{title}} को अपूर्ण चिह्नित करें",
+  },
+  reminderTypes: {
+    medicine: "दवा",
+    hydration: "पानी",
+    activity: "गतिविधि",
+    appointment: "अपॉइंटमेंट",
+  },
+  progress: {
+    instructions: "यह आपकी प्रगति है। सक्रिय रहने के लिए खेलते रहें।",
+    title: "प्रगति",
+    subtitle: "आपकी गतिविधि सारांश",
+    loading: "प्रगति लोड हो रही है",
+    error: "प्रगति लोड नहीं हो सकी। कनेक्शन जाँचें।",
+    wellDone: "बहुत अच्छा!",
+    sessions: "सत्र",
+    avgScore: "औसत स्कोर",
+    dayStreak: "दिन की लड़ी",
+    summaryPlayed: "आपने कुल {{count}} खेल खेला है।",
+    summaryPlayedPlural: "आपने कुल {{count}} खेल खेले हैं।",
+    summaryNone: "अभी कोई खेल दर्ज नहीं। शुरू करने के लिए होम पर खेलें टैप करें।",
+  },
+  voice: {
+    instructions:
+      "बोलना शुरू करने के लिए बड़े माइक बटन पर टैप करें। रोकने के लिए फिर टैप करें।",
+    title: "आवाज़",
+    subtitle: "कोको से बात करें",
+    hint: "सुनने के लिए एक बार टैप करें। हो जाने पर फिर टैप करें।",
+    startListening: "सुनना शुरू करें",
+    stopListening: "सुनना बंद करें",
+    micHint: "कोको से बात करने के लिए टैप करें",
+    idle: "बात करने के लिए माइक्रोफ़ोन टैप करें",
+    listening: "सुन रहा है",
+    speaking: "बोल रहा है",
+    thanks: "धन्यवाद। मैंने सुना।",
+  },
+  pin: {
+    delete: "हटाएं",
+    pinLength: "पिन लंबाई {{current}} में से {{max}}",
+  },
+  screenHeader: {
+    homeHint: "मुख्य मेनू पर लौटें",
+  },
+};

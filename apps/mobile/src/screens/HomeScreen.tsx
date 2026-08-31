@@ -1,73 +1,81 @@
 import { StyleSheet, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import { BigButton } from "@/components/BigButton";
 import { IconTile } from "@/components/IconTile";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { WelcomeCard } from "@/components/WelcomeCard";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
+import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
 import { useAuthStore } from "@/stores/authStore";
 import { theme } from "@/theme";
-
-export const HOME_INSTRUCTIONS =
-  "Welcome home. Tap Play for games, Reminders for today's tasks, Progress to see your activity, or Voice to talk.";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 export function HomeScreen({ navigation }: Props) {
   const patientName = useAuthStore((state) => state.patientName);
+  const { t } = useTranslation();
 
-  useSpeakOnMount(
-    patientName
-      ? `Welcome back, ${patientName}. ${HOME_INSTRUCTIONS}`
-      : HOME_INSTRUCTIONS
-  );
+  const spokenInstructions = patientName
+    ? `${t("home.welcomeBack", { name: patientName })} ${t("home.instructions")}`
+    : t("home.instructions");
+
+  useSpeakOnMount(spokenInstructions);
 
   return (
     <ScreenLayout>
       <WelcomeCard
-        name={patientName ?? "Friend"}
-        message="What would you like to do today?"
+        name={patientName ?? t("common.friend")}
+        message={t("home.welcomeMessage")}
       />
 
       <View style={styles.grid}>
         <View style={styles.row}>
           <IconTile
-            label="Play"
+            label={t("home.play")}
             iconName="GameController"
             accentColor={theme.colors.tilePlay}
             backgroundColor={theme.colors.tilePlayBg}
             onPress={() => navigation.navigate("Play")}
-            accessibilityHint="Open cognitive games"
+            accessibilityHint={t("home.playHint")}
           />
           <IconTile
-            label="Reminders"
+            label={t("home.reminders")}
             iconName="Bell"
             accentColor={theme.colors.tileReminders}
             backgroundColor={theme.colors.tileRemindersBg}
             onPress={() => navigation.navigate("Reminders")}
-            accessibilityHint="View today's reminders"
+            accessibilityHint={t("home.remindersHint")}
           />
         </View>
         <View style={styles.row}>
           <IconTile
-            label="Progress"
+            label={t("home.progress")}
             iconName="ChartLineUp"
             accentColor={theme.colors.tileProgress}
             backgroundColor={theme.colors.tileProgressBg}
             onPress={() => navigation.navigate("Progress")}
-            accessibilityHint="See your daily progress"
+            accessibilityHint={t("home.progressHint")}
           />
           <IconTile
-            label="Voice"
+            label={t("home.voice")}
             iconName="Microphone"
             accentColor={theme.colors.tileVoice}
             backgroundColor={theme.colors.tileVoiceBg}
             onPress={() => navigation.navigate("Voice")}
-            accessibilityHint="Open voice assistant"
+            accessibilityHint={t("home.voiceHint")}
           />
         </View>
       </View>
+
+      <BigButton
+        label={t("common.settings")}
+        onPress={() => navigation.navigate("Settings")}
+        variant="outline"
+        accessibilityHint={t("home.settingsHint")}
+        style={styles.settingsButton}
+      />
     </ScreenLayout>
   );
 }
@@ -81,5 +89,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     gap: theme.touch.gap,
+  },
+  settingsButton: {
+    marginTop: theme.spacing.sm,
   },
 });

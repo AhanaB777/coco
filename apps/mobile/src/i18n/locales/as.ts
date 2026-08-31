@@ -1,0 +1,140 @@
+import type { Translations } from "@/i18n/types";
+
+export const as: Translations = {
+  common: {
+    home: "ঘৰ",
+    settings: "ছেটিংছ",
+    signOut: "ছাইন আউট",
+    continue: "আগবাঢ়ক",
+    loading: "ল'ড হৈ আছে",
+    friend: "বন্ধু",
+  },
+  splash: {
+    instructions:
+      "ক’ক’লৈ স্বাগতম। উত্তৰ-পূব ভাৰতৰ বাবে আপোনাৰ স্মৃতি যত্ন সঙ্গী।",
+    badge: "ক’ক’",
+    title: "স্মৃতি যত্ন সঙ্গী",
+    subtitle:
+      "উত্তৰ-পূবৰ পৰিয়ালৰ বাবে জ্ঞানমূলক খেল আৰু কোমল স্মাৰক",
+    loading: "ল'ড হৈ আছে",
+  },
+  login: {
+    tagline: "উত্তৰ-পূব ভাৰত · স্মৃতি যত্ন",
+    signIn: "ছাইন ইন",
+    enterNameSubtitle: "আগবাঢ়িবলৈ আপোনাৰ নাম লিখক",
+    enterPin: "পিন দিয়ক",
+    usernameInstructions:
+      "আপোনাৰ নাম লিখক, তাৰপিছত পিন দিবলৈ আগবাঢ়ক টিপক।",
+    pinInstructions: "নম্বৰ পেডৰে আপোনাৰ চাৰিটা অংকৰ পিন দিয়ক।",
+    pinFor: "{{name}}ৰ বাবে পিন দিয়ক।",
+    namePlaceholder: "আপোনাৰ নাম",
+    nameAccessibilityHint: "আপোনাৰ যত্ন প্ৰফাইলত থকা নাম লিখক",
+    nameRequired: "অনুগ্ৰহ কৰি আপোনাৰ নাম লিখক।",
+    loginError: "নাম বা পিন ভুল। অনুগ্ৰহ কৰি আকৌ চেষ্টা কৰক।",
+    changeName: "আপুনি নহয়? নাম সলনি কৰক",
+    changeNameAccessibility: "নাম সলনি কৰক",
+    signingIn: "ছাইন ইন হৈ আছে",
+    continueHint: "পিন দিয়াৰ পৰ্দালৈ যাওক",
+  },
+  home: {
+    instructions:
+      "খেলৰ বাবে খেলক, আজিৰ কামৰ বাবে স্মাৰক, কাৰ্যকলাপৰ বাবে অগ্ৰগতি, কথা পাতিবলৈ কণ্ঠ, বা ভাষা সলনি কৰিবলৈ ছেটিংছ টিপক।",
+    welcomeBack: "পুনৰ স্বাগতম, {{name}}।",
+    welcomeMessage: "আজি আপুনি কি কৰিব বিচাৰে?",
+    play: "খেলক",
+    reminders: "স্মাৰক",
+    progress: "অগ্ৰগতি",
+    voice: "কণ্ঠ",
+    playHint: "জ্ঞানমূলক খেল খোলক",
+    remindersHint: "আজিৰ স্মাৰক চাওক",
+    progressHint: "দৈনিক অগ্ৰগতি চাওক",
+    voiceHint: "কণ্ঠ সহায়ক খোলক",
+    settingsHint: "ভাষা সলনি বা ছাইন আউটৰ বাবে ছেটিংছ খোলক",
+    greetingMorning: "শুভ প্ৰভাত",
+    greetingAfternoon: "শুভ অপৰাহ্ন",
+    greetingEvening: "শুভ সন্ধ্যা",
+  },
+  settings: {
+    instructions:
+      "ছেটিংছ। এপ আৰু কণ্ঠৰ ভাষা বাছনি কৰক।",
+    title: "ছেটিংছ",
+    subtitle: "ভাষা আৰু একাউণ্ট",
+    languageTitle: "এপৰ ভাষা",
+    languageHint:
+      "পৰ্দাত দেখা লেখা আৰু নিৰ্দেশ পঢ়া কণ্ঠ দুয়োটা সলনি হয়।",
+    assameseFallback:
+      "আপোনাৰ ফোনত অসমীয়া কণ্ঠ নাথাকিলে বাংলা কণ্ঠ ব্যৱহাৰ হয়।",
+    languageSet: "ভাষা আপডেট হ'ল।",
+    signOutHint: "ছাইন আউট কৰি লগইন পৰ্দালৈ যাওক",
+  },
+  play: {
+    instructions: "খেলিবলৈ এটা খেল বাছনি কৰক। আৰম্ভ কৰিবলৈ কাৰ্ডটো টিপক।",
+    title: "খেলক",
+    subtitle: "স্মৃতি, মনোযোগ আৰু চিনাক্তকৰণৰ খেল",
+    gameHint: "{{game}} খেল খোলক",
+  },
+  games: {
+    memory_match: "স্মৃতি মিল",
+    sequence_recall: "ক্ৰম স্মৰণ",
+    object_recognition: "বস্তু চিনাক্ত",
+  },
+  gameStub: {
+    instructions: "এই খেল শীঘ্ৰে আহিব।",
+    subtitle: "খেল শীঘ্ৰে আহিব",
+    title: "শীঘ্ৰে আহিব",
+    body: "{{game}} খেল ইয়াত দেখা যাব। এটা অনুশীলন অধিবেশন আপোনাৰ অগ্ৰগতিত সংৰক্ষিত হ'ল।",
+    back: "খেললৈ উভতি যাওক",
+    backHint: "খেলৰ তালিকালৈ উভতি যাওক",
+  },
+  reminders: {
+    instructions:
+      "এইবোৰ আজিৰ স্মাৰক। সম্পূৰ্ণ হ'লে চেকমাৰ্ক টিপক।",
+    title: "স্মাৰক",
+    subtitle: "আজিৰ ঔষধ, পানী আৰু সাক্ষাৎ",
+    loading: "স্মাৰক ল'ড হৈ আছে",
+    empty: "আজি কোনো স্মাৰক নাই।",
+    markDone: "{{title}} সম্পূৰ্ণ চিহ্নিত কৰক",
+    markNotDone: "{{title}} অসম্পূৰ্ণ চিহ্নিত কৰক",
+  },
+  reminderTypes: {
+    medicine: "ঔষধ",
+    hydration: "পানী",
+    activity: "কাৰ্যকলাপ",
+    appointment: "সাক্ষাৎ",
+  },
+  progress: {
+    instructions: "এইটো আপোনাৰ অগ্ৰগতি। সক্ৰিয় থাকিবলৈ খেলি যাওক।",
+    title: "অগ্ৰগতি",
+    subtitle: "আপোনাৰ কাৰ্যকলাপৰ সাৰাংশ",
+    loading: "অগ্ৰগতি ল'ড হৈ আছে",
+    error: "অগ্ৰগতি ল'ড হ'ল নহয়। সংযোগ পৰীক্ষা কৰক।",
+    wellDone: "বহুত ভাল!",
+    sessions: "অধিবেশন",
+    avgScore: "গড় স্ক'ৰ",
+    dayStreak: "দিনৰ ধাৰা",
+    summaryPlayed: "আপুনি মুঠ {{count}}টা খেল খেলিছে।",
+    summaryPlayedPlural: "আপুনি মুঠ {{count}}টা খেল খেলিছে।",
+    summaryNone: "এতিয়ালৈকে কোনো খেল নাই। আৰম্ভ কৰিবলৈ ঘৰত খেলক টিপক।",
+  },
+  voice: {
+    instructions:
+      "কথা পাতিবলৈ ডাঙৰ মাইক বুটাম টিপক। বন্ধ কৰিবলৈ আকৌ টিপক।",
+    title: "কণ্ঠ",
+    subtitle: "ক’ক’ৰ সৈতে কথা পাতক",
+    hint: "শুনিবলৈ এবাৰ টিপক। শেষ হ'লে আকৌ টিপক।",
+    startListening: "শুনা আৰম্ভ কৰক",
+    stopListening: "শুনা বন্ধ কৰক",
+    micHint: "ক’ক’ৰ সৈতে কথা পাতিবলৈ টিপক",
+    idle: "কথা পাতিবলৈ মাইক্ৰ’ফোন টিপক",
+    listening: "শুনি আছে",
+    speaking: "কৈ আছে",
+    thanks: "ধন্যবাদ। মই শুনিলোঁ।",
+  },
+  pin: {
+    delete: "মচক",
+    pinLength: "পিন দৈৰ্ঘ্য {{current}} / {{max}}",
+  },
+  screenHeader: {
+    homeHint: "মূল মেনুলৈ উভতি যাওক",
+  },
+};
