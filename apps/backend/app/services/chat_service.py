@@ -68,7 +68,8 @@ def _to_groq_messages(
 ) -> list[dict[str, str]]:
     messages: list[dict[str, str]] = [{"role": "system", "content": system_prompt}]
     for row in history:
-        role = "user" if row.role == ChatRole.USER else "assistant"
+        role_value = row.role.value if hasattr(row.role, "value") else str(row.role)
+        role = "user" if role_value == ChatRole.USER.value else "assistant"
         messages.append({"role": role, "content": row.content})
     messages.append({"role": "user", "content": user_text})
     return messages

@@ -37,7 +37,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me-to-a-random-secret-in-production}
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:3000,http://localhost:3001,http://localhost:8081}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
-      GROQ_CHAT_MODEL: ${GROQ_CHAT_MODEL:-llama-3.3-70b-versatile}
+      GROQ_CHAT_MODEL: ${GROQ_CHAT_MODEL:-openai/gpt-oss-20b}
       GROQ_WHISPER_MODEL: ${GROQ_WHISPER_MODEL:-whisper-large-v3}
     depends_on:
       postgres:
