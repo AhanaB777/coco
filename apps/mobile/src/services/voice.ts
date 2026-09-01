@@ -1,23 +1,53 @@
-export type VoiceUiState = "idle" | "listening" | "speaking";
+import { Audio } from "expo-av";
 
-type TranscriptHandler = (text: string) => void;
+export type VoiceUiState = "idle" | "listening" | "thinking" | "speaking";
 
-let transcriptHandler: TranscriptHandler | null = null;
-
-export async function startListening(
-  onTranscript: TranscriptHandler
-): Promise<void> {
-  transcriptHandler = onTranscript;
+export interface RecordingResult {
+  uri: string;
+  mimeType: string;
 }
 
-export async function stopListening(): Promise<void> {
-  transcriptHandler = null;
+let activeRecording: Audio.Recording | null = null;
+
+export async function requestMicPermission(): Promise<boolean> {
+  const permission = await Audio.requestPermissionsAsync();
+  return permission.granted;
 }
 
-export async function speakResponse(text: string): Promise<void> {
-  if (transcriptHandler) {
-    transcriptHandler(text);
+export async function startRecording(): Promise<void> {
+  const granted = await requestMicPermission();
+  if (!granted) {
+    throw new Error("MIC_PERMISSION_DENIED");
   }
+
+  await Audio.setAudioModeAsync({
+    allowsRecordingIOS: true,
+    playsInSilentModeIOS: true,
+  });
+
+  const { recording } = await Audio.Recording.createAsync(
+    Audio.RecordingOptionsPresets.HIGH_QUALITY
+  );
+  activeRecording = recording;
+}
+
+export async function stopRecording(): Promise<RecordingResult | null> {
+  if (!activeRecording) {
+    return null;
+  }
+
+  await activeRecording.stopAndUnloadAsync();
+  const uri = activeRecording.getURI();
+  activeRecording = null;
+
+  if (!uri) {
+    return null;
+  }
+
+  return {
+    uri,
+    mimeType: "audio/m4a",
+  };
 }
 
 export function getVoiceStateLabel(
@@ -27,6 +57,8 @@ export function getVoiceStateLabel(
   switch (state) {
     case "listening":
       return t("voice.listening");
+    case "thinking":
+      return t("voice.thinking");
     case "speaking":
       return t("voice.speaking");
     default:

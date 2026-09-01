@@ -9,6 +9,7 @@ import {
   ListNumbers,
   Microphone,
   MoonStars,
+  PaperPlaneRight,
   Scan,
   SquaresFour,
   StopCircle,
@@ -23,6 +24,7 @@ export type AppIconName =
   | "Bell"
   | "ChartLineUp"
   | "Microphone"
+  | "PaperPlaneRight"
   | "SquaresFour"
   | "ListNumbers"
   | "Scan"
@@ -48,6 +50,7 @@ const ICON_MAP: Record<AppIconName, ComponentType<IconProps>> = {
   Bell,
   ChartLineUp,
   Microphone,
+  PaperPlaneRight,
   SquaresFour,
   ListNumbers,
   Scan,

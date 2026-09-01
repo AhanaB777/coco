@@ -69,3 +69,20 @@ export interface ProgressMetrics {
   streak_days: number;
   last_active?: string | null;
 }
+
+export type ChatRole = "user" | "assistant";
+
+export interface ChatMessage {
+  id: string;
+  patient_id: string;
+  role: ChatRole;
+  content: string;
+  language: string;
+  created_at: string;
+}
+
+export interface ChatTurnResponse {
+  transcript: string;
+  user_message: ChatMessage;
+  assistant_message: ChatMessage;
+}

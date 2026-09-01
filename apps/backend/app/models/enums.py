@@ -28,3 +28,8 @@ class MyWorldCategory(str, enum.Enum):
     PERSON = "person"
     PLACE = "place"
     OBJECT = "object"
+
+
+class ChatRole(str, enum.Enum):
+    USER = "user"
+    ASSISTANT = "assistant"

@@ -110,8 +110,16 @@ export interface Translations {
     micHint: string;
     idle: string;
     listening: string;
+    thinking: string;
     speaking: string;
     thanks: string;
+    error: string;
+    you: string;
+    coco: string;
+    welcome: string;
+    sendText: string;
+    typeMessage: string;
+    noMicPermission: string;
   };
   pin: {
     delete: string;

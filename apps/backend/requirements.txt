@@ -18,3 +18,4 @@ scikit-learn==1.8.0
 pandas
 numpy
 joblib
+groq>=0.22.0
