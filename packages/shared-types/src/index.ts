@@ -163,3 +163,49 @@ export interface SystemHealthResponse {
   redis: string;
   detail?: string | null;
 }
+
+export interface DifficultyDetail {
+  recommended_level: number;
+  decision: string;
+  reason: string;
+  trend: string;
+  confidence: number;
+  ml_agrees?: boolean | null;
+  ml_prediction?: string | null;
+}
+
+export interface PersonalizationDetail {
+  recommended_domain: string;
+  activity_hint?: string | null;
+  my_world_item_id?: string | null;
+  content_theme: string;
+  theme_label: string;
+  preferred_language?: string | null;
+  my_world_available: boolean;
+  reason: string;
+}
+
+export interface DomainAnalytics {
+  average_performance: number;
+  trend: string;
+  slope: number;
+  sessions_played: number;
+}
+
+export interface AnalyticsDetail {
+  overall_trend: string;
+  overall_slope: number;
+  decline_alert: boolean;
+  domains: Record<string, DomainAnalytics>;
+  strongest_domain?: string | null;
+  weakest_domain?: string | null;
+  sessions_last_7_days: number;
+  total_sessions: number;
+}
+
+export interface AISummaryResponse {
+  patient_id: string;
+  difficulty: DifficultyDetail;
+  personalization: PersonalizationDetail;
+  analytics: AnalyticsDetail;
+}
