@@ -1,7 +1,8 @@
-from app.routers import admin, auth, caregivers, games, patients, progress, reminders
+from app.routers import admin, alerts, auth, caregivers, games, patients, progress, reminders
 
 __all__ = [
     "admin",
+    "alerts",
     "auth",
     "caregivers",
     "games",

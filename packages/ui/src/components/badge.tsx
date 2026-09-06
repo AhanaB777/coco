@@ -17,7 +17,7 @@ const badgeVariants = cva(
         danger:
           "bg-[color-mix(in_srgb,var(--color-destructive)_14%,white)] text-[var(--color-destructive)]",
         accent:
-          "bg-[color-mix(in_srgb,var(--color-muga)_22%,white)] text-[var(--color-ink)]",
+          "bg-[color-mix(in_srgb,var(--color-primary)_14%,white)] text-[var(--color-primary)]",
       },
     },
     defaultVariants: {

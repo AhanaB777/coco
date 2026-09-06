@@ -41,3 +41,4 @@ class Patient(Base):
     game_sessions: Mapped[list["GameSession"]] = relationship(back_populates="patient")
     reminders: Mapped[list["Reminder"]] = relationship(back_populates="patient")
     chat_messages: Mapped[list["ChatMessage"]] = relationship(back_populates="patient")
+    alerts: Mapped[list["Alert"]] = relationship(back_populates="patient")

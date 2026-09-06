@@ -7,7 +7,7 @@ from app.database import Base, get_db
 from app.main import app
 from app.seed import seed_database
 
-TEST_DATABASE_URL = "postgresql://coco:coco_dev_password@localhost:5432/coco"
+TEST_DATABASE_URL = "postgresql://coco:coco_dev_password@localhost:5433/coco"
 
 
 @pytest.fixture(scope="session")

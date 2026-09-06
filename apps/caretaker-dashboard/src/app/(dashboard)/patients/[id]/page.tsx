@@ -4,13 +4,14 @@ import { Badge } from "@coco/ui";
 import { ArrowLeft } from "lucide-react";
 
 import { AiInsightPanel } from "@/components/AiInsightPanel";
-import { MetricTile } from "@/components/PatientCard";
+import { MetricTile, PatientAlertsCard } from "@/components/PatientCard";
 import { ReminderList } from "@/components/ReminderList";
 import { SessionTable } from "@/components/SessionTable";
 import {
   getAiSummary,
   getPatient,
   getProgress,
+  listAlerts,
   listReminders,
   listSessions,
 } from "@/server/caregiver-api";
@@ -33,11 +34,12 @@ export default async function PatientDetailPage({ params }: Props) {
     throw err;
   }
 
-  const [progress, ai, reminders, sessions] = await Promise.all([
+  const [progress, ai, reminders, sessions, alerts] = await Promise.all([
     getProgress(id).catch(() => null),
     getAiSummary(id).catch(() => null),
     listReminders(id).catch(() => []),
     listSessions(id).catch(() => []),
+    listAlerts({ patientId: id, status: "active" }).catch(() => []),
   ]);
 
   return (
@@ -65,7 +67,11 @@ export default async function PatientDetailPage({ params }: Props) {
           </div>
           <div className="flex flex-wrap gap-2">
             <Badge variant="accent">Level {patient.cognitive_level}</Badge>
-            {ai?.analytics.decline_alert ? (
+            {alerts.length > 0 ? (
+              <Badge variant="warning">
+                {alerts.length} alert{alerts.length === 1 ? "" : "s"}
+              </Badge>
+            ) : ai?.analytics.decline_alert ? (
               <Badge variant="warning">Decline alert</Badge>
             ) : null}
           </div>
@@ -94,6 +100,8 @@ export default async function PatientDetailPage({ params }: Props) {
           hint={ai?.difficulty.decision}
         />
       </section>
+
+      <PatientAlertsCard alerts={alerts} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <AiInsightPanel ai={ai} />

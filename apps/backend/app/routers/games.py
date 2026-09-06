@@ -70,6 +70,11 @@ def create_game_session(
     db.add(session)
     db.commit()
     db.refresh(session)
+
+    from app.services.alert_engine import evaluate_patient
+
+    evaluate_patient(db, patient)
+
     return _session_response(session)
 
 

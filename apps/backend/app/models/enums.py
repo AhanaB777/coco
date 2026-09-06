@@ -33,3 +33,21 @@ class MyWorldCategory(str, enum.Enum):
 class ChatRole(str, enum.Enum):
     USER = "user"
     ASSISTANT = "assistant"
+
+
+class AlertType(str, enum.Enum):
+    COGNITIVE_DECLINE = "cognitive_decline"
+    INACTIVITY = "inactivity"
+    MISSED_REMINDER = "missed_reminder"
+
+
+class AlertSeverity(str, enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class AlertStatus(str, enum.Enum):
+    ACTIVE = "active"
+    ACKNOWLEDGED = "acknowledged"
+    RESOLVED = "resolved"

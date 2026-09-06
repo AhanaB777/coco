@@ -209,3 +209,38 @@ export interface AISummaryResponse {
   personalization: PersonalizationDetail;
   analytics: AnalyticsDetail;
 }
+
+export type AlertType =
+  | "cognitive_decline"
+  | "inactivity"
+  | "missed_reminder";
+
+export type AlertSeverity = "low" | "medium" | "high";
+
+export type AlertStatus = "active" | "acknowledged" | "resolved";
+
+export interface Alert {
+  id: string;
+  patient_id: string;
+  caregiver_id: string;
+  alert_type: AlertType;
+  severity: AlertSeverity;
+  title: string;
+  message: string;
+  status: AlertStatus;
+  source_ref?: string | null;
+  created_at: string;
+  acknowledged_at?: string | null;
+  resolved_at?: string | null;
+  patient_name?: string | null;
+}
+
+export interface AlertUpdate {
+  status: "acknowledged" | "resolved";
+}
+
+export interface AlertSummary {
+  active_count: number;
+  high_count: number;
+  by_type: Record<string, number>;
+}

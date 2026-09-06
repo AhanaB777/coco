@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import type {
+  AlertUpdate,
   PatientCreate,
   ReminderCreate,
   ReminderUpdate,
@@ -12,6 +13,7 @@ import {
   createPatient,
   createReminder,
   deleteReminder,
+  updateAlert,
   updateReminder,
 } from "@/server/caregiver-api";
 import { ApiError } from "@/server/server-api";
@@ -38,6 +40,8 @@ export async function createReminderAction(payload: ReminderCreate) {
   try {
     const reminder = await createReminder(payload);
     revalidatePath(`/patients/${payload.patient_id}`);
+    revalidatePath("/alerts");
+    revalidatePath("/");
     return reminder;
   } catch (err) {
     rethrow(err);
@@ -52,6 +56,8 @@ export async function updateReminderAction(
   try {
     const reminder = await updateReminder(id, payload);
     revalidatePath(`/patients/${patientId}`);
+    revalidatePath("/alerts");
+    revalidatePath("/");
     return reminder;
   } catch (err) {
     rethrow(err);
@@ -62,6 +68,22 @@ export async function deleteReminderAction(id: string, patientId: string) {
   try {
     await deleteReminder(id);
     revalidatePath(`/patients/${patientId}`);
+    revalidatePath("/alerts");
+    revalidatePath("/");
+  } catch (err) {
+    rethrow(err);
+  }
+}
+
+export async function updateAlertAction(id: string, payload: AlertUpdate) {
+  try {
+    const alert = await updateAlert(id, payload);
+    revalidatePath("/alerts");
+    revalidatePath("/");
+    if (alert.patient_id) {
+      revalidatePath(`/patients/${alert.patient_id}`);
+    }
+    return alert;
   } catch (err) {
     rethrow(err);
   }

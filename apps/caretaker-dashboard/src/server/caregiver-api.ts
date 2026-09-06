@@ -1,5 +1,8 @@
 import type {
   AISummaryResponse,
+  Alert,
+  AlertSummary,
+  AlertUpdate,
   GameSession,
   Patient,
   PatientCreate,
@@ -71,21 +74,63 @@ export function deleteReminder(id: string) {
   });
 }
 
+export function listAlerts(params?: {
+  status?: string;
+  patientId?: string;
+  limit?: number;
+}) {
+  const search = new URLSearchParams();
+  if (params?.status) search.set("status", params.status);
+  if (params?.patientId) search.set("patient_id", params.patientId);
+  if (params?.limit) search.set("limit", String(params.limit));
+  const qs = search.toString();
+  return apiFetch<Alert[]>(`/api/v1/alerts/${qs ? `?${qs}` : ""}`);
+}
+
+export function getAlertsSummary() {
+  return apiFetch<AlertSummary>("/api/v1/alerts/summary");
+}
+
+export function updateAlert(id: string, payload: AlertUpdate) {
+  return apiFetch<Alert>(`/api/v1/alerts/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
 export type PatientOverview = {
   patient: Patient;
   progress: ProgressMetrics | null;
   ai: AISummaryResponse | null;
+  activeAlertCount: number;
 };
 
 export async function loadPatientOverviews(): Promise<PatientOverview[]> {
-  const patients = await listPatients();
+  const [patients, alerts] = await Promise.all([
+    listPatients(),
+    listAlerts({ status: "active" }).catch(() => [] as Alert[]),
+  ]);
+
+  const countByPatient = new Map<string, number>();
+  for (const alert of alerts) {
+    countByPatient.set(
+      alert.patient_id,
+      (countByPatient.get(alert.patient_id) ?? 0) + 1
+    );
+  }
+
   return Promise.all(
     patients.map(async (patient) => {
       const [progress, ai] = await Promise.all([
         getProgress(patient.id).catch(() => null),
         getAiSummary(patient.id).catch(() => null),
       ]);
-      return { patient, progress, ai };
+      return {
+        patient,
+        progress,
+        ai,
+        activeAlertCount: countByPatient.get(patient.id) ?? 0,
+      };
     })
   );
 }
