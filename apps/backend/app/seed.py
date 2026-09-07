@@ -6,7 +6,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
-from app.models import GameSession, Patient, Reminder, User
+from app.models import GameSession, Patient, Reminder, User, YogaVideo
 from app.models.enums import GameType, MyWorldCategory, ReminderType, UserRole
 from app.models.my_world_item import MyWorldItem
 
@@ -35,7 +35,144 @@ DEMO_CAREGIVER_PASSWORD = "caregiver12"
 
 
 def seed_database(db: Session) -> None:
+    # --------------------------------------------------------------------
+    # Yoga videos
+    # --------------------------------------------------------------------
+
+    yoga_videos = [
+        # -------------------- Breathing --------------------
+        YogaVideo(
+            title="Gentle Breathing",
+            description="A simple breathing exercise to help with relaxation.",
+            language="en",
+            category="breathing",
+            difficulty="beginner",
+            video_uri="/yoga/gentle_breathing_en.mp4",
+            thumbnail_uri="/yoga/thumbnails/gentle_breathing.jpg",
+            duration=180,
+            is_downloadable=True,
+        ),
+        YogaVideo(
+            title="সহজ শ্বাস-প্ৰশ্বাস",
+            description="আৰাম আৰু শান্তিৰ বাবে এটা সহজ শ্বাস-প্ৰশ্বাসৰ ব্যায়াম।",
+            language="as",
+            category="breathing",
+            difficulty="beginner",
+            video_uri="/yoga/gentle_breathing_as.mp4",
+            thumbnail_uri="/yoga/thumbnails/gentle_breathing.jpg",
+            duration=180,
+            is_downloadable=True,
+        ),
+
+        # -------------------- Stretching --------------------
+        YogaVideo(
+            title="Gentle Morning Stretch",
+            description="A gentle seated stretching routine for the morning.",
+            language="en",
+            category="stretching",
+            difficulty="beginner",
+            video_uri="/yoga/morning_stretch_en.mp4",
+            thumbnail_uri="/yoga/thumbnails/morning_stretch.jpg",
+            duration=300,
+            is_downloadable=True,
+        ),
+        YogaVideo(
+            title="পুৱাৰ কোমল ষ্ট্ৰেচিং",
+            description="পুৱাৰ বাবে এটা সহজে বহি কৰিব পৰা ষ্ট্ৰেচিং ব্যায়াম।",
+            language="as",
+            category="stretching",
+            difficulty="beginner",
+            video_uri="/yoga/morning_stretch_as.mp4",
+            thumbnail_uri="/yoga/thumbnails/morning_stretch.jpg",
+            duration=300,
+            is_downloadable=True,
+        ),
+
+        # -------------------- Mobility --------------------
+        YogaVideo(
+            title="Gentle Joint Movement",
+            description="Slow and gentle movements to keep the joints flexible.",
+            language="en",
+            category="mobility",
+            difficulty="beginner",
+            video_uri="/yoga/joint_movement_en.mp4",
+            thumbnail_uri="/yoga/thumbnails/joint_movement.jpg",
+            duration=240,
+            is_downloadable=True,
+        ),
+        YogaVideo(
+            title="কোমল গাঁঠিৰ ব্যায়াম",
+            description="গাঁঠিবোৰ নমনীয় কৰি ৰাখিবলৈ লাহে লাহে কৰা সহজ ব্যায়াম।",
+            language="as",
+            category="mobility",
+            difficulty="beginner",
+            video_uri="/yoga/joint_movement_as.mp4",
+            thumbnail_uri="/yoga/thumbnails/joint_movement.jpg",
+            duration=240,
+            is_downloadable=True,
+        ),
+
+        # -------------------- Balance --------------------
+        YogaVideo(
+            title="Supported Balance",
+            description="A gentle balance activity using a chair for support.",
+            language="en",
+            category="balance",
+            difficulty="beginner",
+            video_uri="/yoga/supported_balance_en.mp4",
+            thumbnail_uri="/yoga/thumbnails/supported_balance.jpg",
+            duration=240,
+            is_downloadable=True,
+        ),
+        YogaVideo(
+            title="সহায়তাৰে ভাৰসাম্য ব্যায়াম",
+            description="চকীৰ সহায়তাৰে কৰা এটা সহজ ভাৰসাম্য ব্যায়াম।",
+            language="as",
+            category="balance",
+            difficulty="beginner",
+            video_uri="/yoga/supported_balance_as.mp4",
+            thumbnail_uri="/yoga/thumbnails/supported_balance.jpg",
+            duration=240,
+            is_downloadable=True,
+        ),
+
+        # -------------------- Relaxation --------------------
+        YogaVideo(
+            title="Gentle Relaxation",
+            description="A calm and simple relaxation session.",
+            language="en",
+            category="relaxation",
+            difficulty="beginner",
+            video_uri="/yoga/relaxation_en.mp4",
+            thumbnail_uri="/yoga/thumbnails/relaxation.jpg",
+            duration=300,
+            is_downloadable=True,
+        ),
+        YogaVideo(
+            title="কোমল শিথিলতা",
+            description="শান্ত আৰু সহজে কৰিব পৰা এটা শিথিলতা ব্যায়াম।",
+            language="as",
+            category="relaxation",
+            difficulty="beginner",
+            video_uri="/yoga/relaxation_as.mp4",
+            thumbnail_uri="/yoga/thumbnails/relaxation.jpg",
+            duration=300,
+            is_downloadable=True,
+        ),
+    ]
+
+    db.add_all(yoga_videos)
+
+    # Insert Yoga videos only once.
+    existing_yoga_uris = {uri[0] for uri in db.query(YogaVideo.video_uri).all()}
+    new_yoga_videos = [v for v in yoga_videos if v.video_uri not in existing_yoga_uris]
+    if new_yoga_videos:
+        db.add_all(new_yoga_videos)
+        db.commit()
+
+    # Existing demo data is already seeded.
     if db.query(User).filter(User.email == DEMO_ADMIN_EMAIL).first():
+        db.commit()
         return
 
     now = datetime.now(timezone.utc)
@@ -448,6 +585,8 @@ def seed_database(db: Session) -> None:
 
     db.add_all(my_world_items)
 
+
+
     # Commit everything together
     db.commit()
 
@@ -466,4 +605,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
