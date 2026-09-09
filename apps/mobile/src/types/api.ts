@@ -50,6 +50,12 @@ export interface GameSessionCreate {
   difficulty_level?: number | null;
 }
 
+export interface DifficultyResponse {
+  patient_id: string;
+  suggested_difficulty: number;
+  cognitive_level: number;
+}
+
 export interface Reminder {
   id: string;
   patient_id: string;

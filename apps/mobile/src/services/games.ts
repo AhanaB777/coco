@@ -1,10 +1,20 @@
-import type { GameSession, GameSessionCreate, GameType } from "@/types/api";
+import type { GameSession, GameSessionCreate, GameType, DifficultyResponse } from "@/types/api";
 
 import { api } from "@/services/api";
 
 export interface LaunchGameResult {
   started: boolean;
   message: string;
+}
+
+export async function getGameDifficulty(
+  patientId: string
+): Promise<DifficultyResponse> {
+  const { data } = await api.get<DifficultyResponse>(
+    `/api/v1/games/difficulty/${patientId}`
+  );
+
+  return data;
 }
 
 export async function createGameSession(

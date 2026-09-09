@@ -68,6 +68,35 @@ export interface Translations {
     gameHint: string;
   };
   games: Record<GameType, string>;
+  gameUi: {
+    howToPlay: string;
+    start: string;
+    hint: string;
+    backToGamesHint: string;
+    level: string;
+    memoryInstructions: string;
+    namingInstructions: string;
+    patternInstructions: string;
+    settingUpCards: string;
+    choosingPictures: string;
+    gettingPatternReady: string;
+    whatIsThis: string;
+    roundComplete: string;
+    playAgain: string;
+    backToGames: string;
+    startingIn: string;
+    watchClosely: string;
+    yourTurn: string;
+    round: string;
+  };
+  namingItems: Record<string, string>;
+  gameFeedback: {
+    gentleRetry: string[];
+    celebration: string[];
+    oneStar: string[];
+    twoStars: string[];
+    threeStars: string[];
+  };
   gameStub: {
     instructions: string;
     subtitle: string;
