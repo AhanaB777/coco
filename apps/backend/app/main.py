@@ -11,6 +11,7 @@ from app.routers import (
     caregivers,
     chat,
     games,
+    media,
     patients,
     progress,
     reminders,
@@ -42,7 +43,8 @@ app.include_router(reminders.router, prefix="/api/v1")
 app.include_router(progress.router, prefix="/api/v1")
 app.include_router(caregivers.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1")
-app.include_router(my_world.router)
+app.include_router(my_world.router, prefix="/api/v1")
+app.include_router(media.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
 app.include_router(alerts.router, prefix="/api/v1")
 app.include_router(yoga.router, prefix="/api/v1")

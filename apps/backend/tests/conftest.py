@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -7,7 +9,12 @@ from app.database import Base, get_db
 from app.main import app
 from app.seed import seed_database
 
-TEST_DATABASE_URL = "postgresql://coco:coco_dev_password@localhost:5433/coco"
+# Overridable so the suite can point at a throwaway database: it drops and
+# recreates every table, which must never happen to a development database.
+TEST_DATABASE_URL = os.environ.get(
+    "TEST_DATABASE_URL",
+    "postgresql://coco:coco_dev_password@localhost:5433/coco",
+)
 
 
 @pytest.fixture(scope="session")

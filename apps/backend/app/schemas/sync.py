@@ -9,7 +9,7 @@ class SyncOperationCreate(BaseModel):
     operation_id: str = Field(min_length=1, max_length=100)
     device_id: str = Field(min_length=1, max_length=255)
     patient_id: UUID
-    operation_type: Literal["game_result", "reminder_update"]
+    operation_type: Literal["game_result", "reminder_update", "my_world_reaction"]
     payload: dict[str, Any] = Field(default_factory=dict)
     client_timestamp: datetime | None = None
 

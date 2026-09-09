@@ -67,6 +67,16 @@ export function HomeScreen({ navigation }: Props) {
             accessibilityHint={t("home.voiceHint")}
           />
         </View>
+        <View style={styles.row}>
+          <IconTile
+            label={t("home.myWorld")}
+            iconName="Heart"
+            accentColor={theme.colors.tileMyWorld}
+            backgroundColor={theme.colors.tileMyWorldBg}
+            onPress={() => navigation.navigate("MyWorld")}
+            accessibilityHint={t("home.myWorldHint")}
+          />
+        </View>
       </View>
 
       <BigButton

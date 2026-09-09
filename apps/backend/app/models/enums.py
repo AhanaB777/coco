@@ -28,6 +28,21 @@ class MyWorldCategory(str, enum.Enum):
     PERSON = "person"
     PLACE = "place"
     OBJECT = "object"
+    EVENT = "event"
+    MOMENT = "moment"
+
+
+class MediaType(str, enum.Enum):
+    PHOTO = "photo"
+    VIDEO = "video"
+    AUDIO = "audio"
+    NOTE = "note"
+
+
+class MyWorldReactionType(str, enum.Enum):
+    VIEWED = "viewed"
+    REMEMBERED = "remembered"
+    UNSURE = "unsure"
 
 
 class ChatRole(str, enum.Enum):

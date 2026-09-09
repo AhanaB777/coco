@@ -4,6 +4,8 @@ import type { RootStackParamList } from "@/navigation/types";
 import { GameStubScreen } from "@/screens/GameStubScreen";
 import { HomeScreen } from "@/screens/HomeScreen";
 import { LoginPinScreen } from "@/screens/LoginPinScreen";
+import { MemoryDetailScreen } from "@/screens/MemoryDetailScreen";
+import { MyWorldScreen } from "@/screens/MyWorldScreen";
 import { PlayScreen } from "@/screens/PlayScreen";
 import { ProgressScreen } from "@/screens/ProgressScreen";
 import { RemindersScreen } from "@/screens/RemindersScreen";
@@ -31,6 +33,8 @@ export function RootNavigator() {
       <Stack.Screen name="GameStub" component={GameStubScreen} />
       <Stack.Screen name="Progress" component={ProgressScreen} />
       <Stack.Screen name="Voice" component={VoiceScreen} />
+      <Stack.Screen name="MyWorld" component={MyWorldScreen} />
+      <Stack.Screen name="MemoryDetail" component={MemoryDetailScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );

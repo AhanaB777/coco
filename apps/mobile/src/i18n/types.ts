@@ -42,10 +42,12 @@ export interface Translations {
     reminders: string;
     progress: string;
     voice: string;
+    myWorld: string;
     playHint: string;
     remindersHint: string;
     progressHint: string;
     voiceHint: string;
+    myWorldHint: string;
     settingsHint: string;
     greetingMorning: string;
     greetingAfternoon: string;
@@ -86,6 +88,35 @@ export interface Translations {
     markNotDone: string;
   };
   reminderTypes: Record<ReminderType, string>;
+  myWorld: {
+    instructions: string;
+    title: string;
+    subtitle: string;
+    loading: string;
+    empty: string;
+    error: string;
+    offlineBanner: string;
+    openHint: string;
+    videoBadge: string;
+    audioBadge: string;
+    noteBadge: string;
+  };
+  memoryDetail: {
+    instructions: string;
+    title: string;
+    listen: string;
+    listenHint: string;
+    play: string;
+    playHint: string;
+    remember: string;
+    rememberHint: string;
+    remembered: string;
+    tellMeMore: string;
+    tellMeMoreHint: string;
+    people: string;
+    notFound: string;
+    savedOffline: string;
+  };
   progress: {
     instructions: string;
     title: string;

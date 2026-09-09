@@ -1,6 +1,8 @@
 import type { GameSession } from "@coco/shared-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@coco/ui";
 
+import { formatDateTime } from "@/lib/format-date";
+
 const GAME_LABELS: Record<string, string> = {
   memory_match: "Memory match",
   sequence_recall: "Sequence recall",
@@ -45,7 +47,7 @@ export function SessionTable({ sessions }: { sessions: GameSession[] }) {
                       {s.difficulty_level}
                     </td>
                     <td className="py-2.5 text-[var(--color-muted-foreground)]">
-                      {new Date(s.played_at).toLocaleString()}
+                      {formatDateTime(s.played_at)}
                     </td>
                   </tr>
                 ))}

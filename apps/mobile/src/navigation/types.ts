@@ -8,6 +8,8 @@ export type RootStackParamList = {
   GameStub: { gameType: GameType };
   Reminders: undefined;
   Progress: undefined;
-  Voice: undefined;
+  Voice: { seedPrompt?: string } | undefined;
+  MyWorld: undefined;
+  MemoryDetail: { itemId: string };
   Settings: undefined;
 };

@@ -32,10 +32,12 @@ import type { ChatMessage } from "@/types/api";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Voice">;
 
-export function VoiceScreen({ navigation }: Props) {
+export function VoiceScreen({ navigation, route }: Props) {
   const [state, setState] = useState<VoiceUiState>("idle");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [textInput, setTextInput] = useState("");
+  // Arriving from a My World memory pre-fills the question, so the patient
+  // only has to press send to start talking about it.
+  const [textInput, setTextInput] = useState(route.params?.seedPrompt ?? "");
   const [loadingHistory, setLoadingHistory] = useState(true);
   const scrollRef = useRef<ScrollView>(null);
   const { t } = useTranslation();

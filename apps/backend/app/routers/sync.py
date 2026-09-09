@@ -10,6 +10,7 @@ from app.database import get_db
 from app.models import GameSession, MyWorldItem, Reminder, SyncOperation
 from app.models.enums import GameType
 from app.schemas.sync import SyncOperationResult, SyncPullResponse, SyncRequest, SyncResponse
+from app.services.my_world import apply_reaction
 
 router = APIRouter(prefix="/sync", tags=["sync"])
 
@@ -42,7 +43,7 @@ def _apply_game_result(db: Session, patient_id: UUID, payload: dict, client_time
     return session.id
 
 
-def _apply_reminder_update(db: Session, patient_id: UUID, payload: dict):
+def _apply_reminder_update(db: Session, patient_id: UUID, payload: dict, client_timestamp=None):
     try:
         reminder_id = UUID(str(payload["reminder_id"]))
     except (KeyError, ValueError) as exc:
@@ -78,6 +79,36 @@ def _apply_reminder_update(db: Session, patient_id: UUID, payload: dict):
     return reminder.id
 
 
+def _apply_my_world_reaction(db: Session, patient_id: UUID, payload: dict, client_timestamp=None):
+    try:
+        item_id = UUID(str(payload["item_id"]))
+    except (KeyError, ValueError) as exc:
+        raise ValueError("Invalid item_id") from exc
+
+    reaction = payload.get("reaction")
+    if reaction not in {"viewed", "remembered", "unsure"}:
+        raise ValueError("reaction must be one of: viewed, remembered, unsure")
+
+    item = (
+        db.query(MyWorldItem)
+        .filter(MyWorldItem.id == item_id, MyWorldItem.patient_id == patient_id)
+        .first()
+    )
+    if item is None:
+        raise ValueError("My World item not found for patient")
+
+    apply_reaction(item, reaction, client_timestamp)
+    db.flush()
+    return item.id
+
+
+_HANDLERS = {
+    "game_result": _apply_game_result,
+    "reminder_update": _apply_reminder_update,
+    "my_world_reaction": _apply_my_world_reaction,
+}
+
+
 @router.post("", response_model=SyncResponse)
 def sync_operations(
     payload: SyncRequest,
@@ -107,25 +138,29 @@ def sync_operations(
             ))
             continue
 
+        # Commit the audit row first: a rollback of the mutation below must
+        # not erase the record that this operation_id was already seen, or a
+        # permanently-failing operation would be retried forever.
         record = SyncOperation(
             operation_id=operation.operation_id,
             device_id=operation.device_id,
             patient_id=operation.patient_id,
             operation_type=operation.operation_type,
             payload=operation.payload,
-            status="failed",
+            status="pending",
             client_timestamp=operation.client_timestamp,
         )
         db.add(record)
+        db.commit()
+
         try:
-            if operation.operation_type == "game_result":
-                resource_id = _apply_game_result(
-                    db, operation.patient_id, operation.payload, operation.client_timestamp
-                )
-            else:
-                resource_id = _apply_reminder_update(
-                    db, operation.patient_id, operation.payload
-                )
+            handler = _HANDLERS[operation.operation_type]
+            resource_id = handler(
+                db,
+                operation.patient_id,
+                operation.payload,
+                operation.client_timestamp,
+            )
             record.status = "synced"
             record.processed_at = datetime.now(timezone.utc)
             db.commit()
@@ -137,6 +172,10 @@ def sync_operations(
             ))
         except Exception as exc:
             db.rollback()
+            record.status = "failed"
+            record.error_message = str(exc)[:500]
+            record.processed_at = datetime.now(timezone.utc)
+            db.commit()
             failed += 1
             results.append(SyncOperationResult(
                 operation_id=operation.operation_id,
@@ -195,8 +234,15 @@ def pull_changes(
             "id": str(i.id), "patient_id": str(i.patient_id),
             "category": i.category.value, "name": i.name,
             "relationship": i.relationship, "description": i.description,
-            "photo_uri": i.photo_uri, "success_rate": i.success_rate,
-            "times_shown": i.times_shown, "last_shown_at": i.last_shown_at,
-            "updated_at": i.updated_at,
+            "photo_uri": i.photo_uri,
+            "media_type": i.media_type.value, "media_uri": i.media_uri,
+            "thumbnail_uri": i.thumbnail_uri, "media_bytes": i.media_bytes,
+            "story": i.story, "memory_date": i.memory_date,
+            "people": i.people or [], "tags": i.tags or [],
+            "is_favourite": i.is_favourite, "sort_order": i.sort_order,
+            "success_rate": i.success_rate,
+            "times_shown": i.times_shown, "remembered_count": i.remembered_count,
+            "last_shown_at": i.last_shown_at, "last_viewed_at": i.last_viewed_at,
+            "created_at": i.created_at, "updated_at": i.updated_at,
         } for i in world_items],
     )

@@ -23,6 +23,11 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# The Python build-artifact rules above use a bare `lib/`, which also matches
+# TypeScript source directories like packages/ui/src/lib. Keep those tracked.
+!apps/*/src/lib/
+!packages/*/src/lib/
 .venv/
 venv/
 ENV/
