@@ -5,12 +5,18 @@ import {
   ChartLineUp,
   CheckCircle,
   CircleDashed,
+  CloudSlash,
+  FileText,
   GameController,
+  Heart,
+  Images,
   ListNumbers,
   Microphone,
   MoonStars,
   PaperPlaneRight,
+  Play,
   Scan,
+  SpeakerHigh,
   SquaresFour,
   StopCircle,
   Sun,
@@ -34,7 +40,13 @@ export type AppIconName =
   | "StopCircle"
   | "SunHorizon"
   | "Sun"
-  | "MoonStars";
+  | "MoonStars"
+  | "Heart"
+  | "Images"
+  | "Play"
+  | "SpeakerHigh"
+  | "FileText"
+  | "CloudSlash";
 
 type AppIconWeight = "duotone" | "regular" | "fill";
 
@@ -61,6 +73,12 @@ const ICON_MAP: Record<AppIconName, ComponentType<IconProps>> = {
   SunHorizon,
   Sun,
   MoonStars,
+  Heart,
+  Images,
+  Play,
+  SpeakerHigh,
+  FileText,
+  CloudSlash,
 };
 
 export function AppIcon({

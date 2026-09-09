@@ -7,7 +7,13 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
 from app.models import GameSession, Patient, Reminder, User, YogaVideo
-from app.models.enums import GameType, MyWorldCategory, ReminderType, UserRole
+from app.models.enums import (
+    GameType,
+    MediaType,
+    MyWorldCategory,
+    ReminderType,
+    UserRole,
+)
 from app.models.my_world_item import MyWorldItem
 
 
@@ -173,6 +179,9 @@ def seed_database(db: Session) -> None:
     # Existing demo data is already seeded.
     if db.query(User).filter(User.email == DEMO_ADMIN_EMAIL).first():
         db.commit()
+        # Still top up the memory journal, which is keyed on stable IDs and
+        # may post-date the database this developer already has.
+        seed_my_world(db)
         return
 
     now = datetime.now(timezone.utc)
@@ -491,6 +500,23 @@ def seed_database(db: Session) -> None:
     #   Family garden -> 75%
     # --------------------------------------------------------------------
 
+    seed_my_world(db)
+
+
+
+    # Commit everything together
+    db.commit()
+
+
+
+def seed_my_world(db: Session) -> None:
+    """Seeds the My World memory journal.
+
+    Kept separate from `seed_database` and keyed on stable IDs so an existing
+    development database - which returns early from the main seed - still
+    picks up the journal entries.
+    """
+
     my_world_items = [
         # ---- Lakshmi Devi ----
 
@@ -581,14 +607,171 @@ def seed_database(db: Session) -> None:
             success_rate=0.75,
             times_shown=3,
         ),
+
+        # ---- Memory journal entries (Lakshmi) --------------------------
+        # Reminiscence-therapy content the caregiver curates from the
+        # dashboard. Photos are public Unsplash URLs so a fresh clone has a
+        # non-empty gallery without Cloudinary credentials.
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001101"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.EVENT,
+            name="Bihu at the village",
+            relationship=None,
+            description="Rongali Bihu with the whole family",
+            story=(
+                "Every spring the courtyard filled up for Rongali Bihu. You "
+                "wore the mekhela sador your mother wove, and Priya danced "
+                "with the neighbours' children until the dhol players got "
+                "tired. You always made pitha for everyone who came."
+            ),
+            photo_uri="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=400",
+            media_type=MediaType.PHOTO,
+            memory_date=date(1998, 4, 14),
+            people=["Priya", "Rohan"],
+            tags=["bihu", "festival", "village"],
+            is_favourite=True,
+            sort_order=0,
+            times_shown=6,
+            remembered_count=5,
+            success_rate=0.83,
+        ),
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001102"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.PLACE,
+            name="The tea garden",
+            relationship=None,
+            description="Where you worked for twenty years",
+            story=(
+                "You walked to the tea garden before sunrise, past the "
+                "bamboo grove. You knew every row. The manager used to say "
+                "nobody could pick two leaves and a bud faster than you."
+            ),
+            photo_uri="https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?w=400",
+            media_type=MediaType.PHOTO,
+            memory_date=date(1985, 6, 1),
+            people=[],
+            tags=["work", "tea garden", "assam"],
+            sort_order=1,
+            times_shown=4,
+            remembered_count=3,
+            success_rate=0.75,
+        ),
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001103"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.EVENT,
+            name="Rohan's first day at school",
+            relationship=None,
+            description="Walking your grandson to school",
+            story=(
+                "Rohan would not let go of your hand at the gate. You told "
+                "him the teacher was your friend, and he believed you. He "
+                "still tells that story."
+            ),
+            photo_uri="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400",
+            media_type=MediaType.PHOTO,
+            memory_date=date(2009, 1, 5),
+            people=["Rohan"],
+            tags=["family", "school"],
+            sort_order=2,
+            times_shown=3,
+            remembered_count=2,
+            success_rate=0.67,
+        ),
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001104"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.MOMENT,
+            name="Priya's wedding song",
+            relationship=None,
+            description="Video from the wedding",
+            story=(
+                "The whole family sang together at Priya's wedding. You led "
+                "the first line, the way your mother used to."
+            ),
+            photo_uri="https://images.unsplash.com/photo-1519741497674-611481863552?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1519741497674-611481863552?w=400",
+            media_uri=(
+                "https://res.cloudinary.com/demo/video/upload/"
+                "v1611764980/samples/elephants.mp4"
+            ),
+            media_type=MediaType.VIDEO,
+            media_bytes=3_600_000,
+            memory_date=date(2005, 2, 11),
+            people=["Priya"],
+            tags=["wedding", "music", "family"],
+            is_favourite=True,
+            sort_order=3,
+            times_shown=2,
+            remembered_count=2,
+            success_rate=0.9,
+        ),
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001105"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.MOMENT,
+            name="A message from Priya",
+            relationship=None,
+            description="Voice note recorded by your daughter",
+            story="Priya recorded this for you last Sunday.",
+            photo_uri=None,
+            media_uri=(
+                "https://res.cloudinary.com/demo/video/upload/"
+                "v1612275877/samples/audio/bgm-01.mp3"
+            ),
+            media_type=MediaType.AUDIO,
+            media_bytes=1_100_000,
+            memory_date=None,
+            people=["Priya"],
+            tags=["voice note", "family"],
+            sort_order=4,
+            times_shown=1,
+            remembered_count=1,
+        ),
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001106"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.MOMENT,
+            name="Your recipe for pitha",
+            relationship=None,
+            description="Written down by Priya so it is not lost",
+            story=(
+                "Soak the rice overnight. Grind it fine. Roast the sesame "
+                "with jaggery until it smells sweet. You never measured "
+                "anything, and it was always right."
+            ),
+            photo_uri=None,
+            media_type=MediaType.NOTE,
+            memory_date=None,
+            people=["Priya"],
+            tags=["recipe", "food"],
+            sort_order=5,
+        ),
     ]
 
-    db.add_all(my_world_items)
+    existing_ids = {
+        row[0]
+        for row in db.query(MyWorldItem.id).filter(
+            MyWorldItem.id.in_([item.id for item in my_world_items])
+        )
+    }
 
+    new_items = [item for item in my_world_items if item.id not in existing_ids]
 
-
-    # Commit everything together
-    db.commit()
+    if new_items:
+        db.add_all(new_items)
+        db.commit()
 
 
 def main() -> None:

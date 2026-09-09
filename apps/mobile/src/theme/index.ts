@@ -31,10 +31,12 @@ export const theme = {
     tileReminders: "#8B7340",
     tileProgress: "#4A7A55",
     tileVoice: "#6B5B96",
+    tileMyWorld: "#A15C6B",
     tilePlayBg: "#E5F4F4",
     tileRemindersBg: "#FBF3E4",
     tileProgressBg: "#EAF4EC",
     tileVoiceBg: "#F0ECF8",
+    tileMyWorldBg: "#FAECEE",
   },
   spacing: {
     xs: 8,

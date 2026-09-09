@@ -4,16 +4,23 @@ import { revalidatePath } from "next/cache";
 
 import type {
   AlertUpdate,
+  MyWorldItemCreate,
+  MyWorldItemUpdate,
   PatientCreate,
   ReminderCreate,
   ReminderUpdate,
+  UploadResourceType,
 } from "@coco/shared-types";
 
 import {
+  createMyWorldItem,
   createPatient,
   createReminder,
+  deleteMyWorldItem,
   deleteReminder,
+  getUploadSignature,
   updateAlert,
+  updateMyWorldItem,
   updateReminder,
 } from "@/server/caregiver-api";
 import { ApiError } from "@/server/server-api";
@@ -85,6 +92,62 @@ export async function updateAlertAction(id: string, payload: AlertUpdate) {
     }
     return alert;
   } catch (err) {
+    rethrow(err);
+  }
+}
+
+export async function createMemoryAction(
+  patientId: string,
+  payload: MyWorldItemCreate
+) {
+  try {
+    const item = await createMyWorldItem(patientId, payload);
+    revalidatePath(`/patients/${patientId}`);
+    return item;
+  } catch (err) {
+    rethrow(err);
+  }
+}
+
+export async function updateMemoryAction(
+  patientId: string,
+  itemId: string,
+  payload: MyWorldItemUpdate
+) {
+  try {
+    const item = await updateMyWorldItem(patientId, itemId, payload);
+    revalidatePath(`/patients/${patientId}`);
+    return item;
+  } catch (err) {
+    rethrow(err);
+  }
+}
+
+export async function deleteMemoryAction(patientId: string, itemId: string) {
+  try {
+    await deleteMyWorldItem(patientId, itemId);
+    revalidatePath(`/patients/${patientId}`);
+  } catch (err) {
+    rethrow(err);
+  }
+}
+
+/**
+ * Hands the browser a short-lived Cloudinary signature so the file uploads
+ * straight to Cloudinary. Returns null when uploads are not configured, so
+ * the form can fall back to pasting a media URL.
+ */
+export async function getUploadSignatureAction(
+  patientId: string,
+  resourceType: UploadResourceType,
+  filename?: string
+) {
+  try {
+    return await getUploadSignature(patientId, resourceType, filename);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 503) {
+      return null;
+    }
     rethrow(err);
   }
 }

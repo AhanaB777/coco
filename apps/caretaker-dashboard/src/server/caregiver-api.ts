@@ -4,12 +4,17 @@ import type {
   AlertSummary,
   AlertUpdate,
   GameSession,
+  MyWorldItem,
+  MyWorldItemCreate,
+  MyWorldItemUpdate,
   Patient,
   PatientCreate,
   ProgressMetrics,
   Reminder,
   ReminderCreate,
   ReminderUpdate,
+  UploadResourceType,
+  UploadSignature,
   UserResponse,
 } from "@coco/shared-types";
 
@@ -133,4 +138,63 @@ export async function loadPatientOverviews(): Promise<PatientOverview[]> {
       };
     })
   );
+}
+
+// --- My World -------------------------------------------------------------
+
+export function listMyWorld(
+  patientId: string,
+  params?: { category?: string; mediaType?: string; since?: string }
+) {
+  const search = new URLSearchParams();
+  if (params?.category) search.set("category", params.category);
+  if (params?.mediaType) search.set("media_type", params.mediaType);
+  if (params?.since) search.set("since", params.since);
+  const qs = search.toString();
+  return apiFetch<MyWorldItem[]>(
+    `/api/v1/my-world/${encodeURIComponent(patientId)}${qs ? `?${qs}` : ""}`
+  );
+}
+
+export function createMyWorldItem(
+  patientId: string,
+  payload: MyWorldItemCreate
+) {
+  return apiFetch<MyWorldItem>(
+    `/api/v1/my-world/${encodeURIComponent(patientId)}`,
+    { method: "POST", body: JSON.stringify(payload) }
+  );
+}
+
+export function updateMyWorldItem(
+  patientId: string,
+  itemId: string,
+  payload: MyWorldItemUpdate
+) {
+  return apiFetch<MyWorldItem>(
+    `/api/v1/my-world/${encodeURIComponent(patientId)}/${encodeURIComponent(itemId)}`,
+    { method: "PATCH", body: JSON.stringify(payload) }
+  );
+}
+
+export function deleteMyWorldItem(patientId: string, itemId: string) {
+  return apiFetch<void>(
+    `/api/v1/my-world/${encodeURIComponent(patientId)}/${encodeURIComponent(itemId)}`,
+    { method: "DELETE" }
+  );
+}
+
+export function getUploadSignature(
+  patientId: string,
+  resourceType: UploadResourceType,
+  filename?: string
+) {
+  return apiFetch<UploadSignature>("/api/v1/media/upload-signature", {
+    method: "POST",
+    body: JSON.stringify({
+      patient_id: patientId,
+      resource_type: resourceType,
+      filename,
+    }),
+  });
 }

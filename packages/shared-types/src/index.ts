@@ -244,3 +244,81 @@ export interface AlertSummary {
   high_count: number;
   by_type: Record<string, number>;
 }
+
+// --- My World: the patient's memory journal ---------------------------------
+
+export type MyWorldCategory =
+  | "person"
+  | "place"
+  | "object"
+  | "event"
+  | "moment";
+
+export type MediaType = "photo" | "video" | "audio" | "note";
+
+export type MyWorldReactionType = "viewed" | "remembered" | "unsure";
+
+export interface MyWorldItem {
+  id: string;
+  patient_id: string;
+  category: MyWorldCategory;
+  name: string;
+  relationship?: string | null;
+  description?: string | null;
+  photo_uri?: string | null;
+  media_type: MediaType;
+  media_uri?: string | null;
+  thumbnail_uri?: string | null;
+  media_bytes?: number | null;
+  story?: string | null;
+  memory_date?: string | null;
+  people: string[];
+  tags: string[];
+  is_favourite: boolean;
+  sort_order: number;
+  success_rate?: number | null;
+  times_shown: number;
+  remembered_count: number;
+  last_shown_at?: string | null;
+  last_viewed_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MyWorldItemCreate {
+  category: MyWorldCategory;
+  name: string;
+  relationship?: string | null;
+  description?: string | null;
+  photo_uri?: string | null;
+  media_type?: MediaType;
+  media_uri?: string | null;
+  thumbnail_uri?: string | null;
+  media_bytes?: number | null;
+  story?: string | null;
+  memory_date?: string | null;
+  people?: string[];
+  tags?: string[];
+  is_favourite?: boolean;
+  sort_order?: number;
+}
+
+export type MyWorldItemUpdate = Partial<MyWorldItemCreate>;
+
+export interface MyWorldReaction {
+  reaction: MyWorldReactionType;
+  client_timestamp?: string | null;
+}
+
+export type UploadResourceType = "image" | "video" | "raw";
+
+export interface UploadSignature {
+  cloud_name: string;
+  api_key: string;
+  timestamp: number;
+  signature: string;
+  folder: string;
+  public_id: string;
+  resource_type: UploadResourceType;
+  upload_url: string;
+}

@@ -6,6 +6,7 @@ import { Check, Plus, Trash2 } from "lucide-react";
 
 import type { Reminder, ReminderType } from "@coco/shared-types";
 
+import { formatTime } from "@/lib/format-date";
 import {
   createReminderAction,
   deleteReminderAction,
@@ -186,10 +187,7 @@ export function ReminderList({
                     </Badge>
                   </div>
                   <p className="mt-1 text-xs text-[var(--color-muted-foreground)]">
-                    {new Date(reminder.scheduled_at).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatTime(reminder.scheduled_at)}
                     {reminder.message ? ` · ${reminder.message}` : ""}
                   </p>
                 </div>

@@ -8,6 +8,7 @@ import { Badge, Button } from "@coco/ui";
 import type { Alert, AlertStatus } from "@coco/shared-types";
 
 import { EmptyState } from "@/components/EmptyState";
+import { formatDateTime } from "@/lib/format-date";
 import { updateAlertAction } from "@/server/actions";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -117,7 +118,7 @@ export function AlertsClient({ alerts }: { alerts: Alert[] }) {
                       {alert.patient_name ?? "Patient"}
                     </Link>
                     {" · "}
-                    {new Date(alert.created_at).toLocaleString()}
+                    {formatDateTime(alert.created_at)}
                   </p>
                 </div>
                 {alert.status === "active" ? (

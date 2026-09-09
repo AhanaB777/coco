@@ -10,6 +10,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { initializeDatabase } from "@/db/database";
 import { RootNavigator } from "@/navigation/RootNavigator";
+import { startAutoSync } from "@/services/autoSync";
 import "@/services/notifications";
 import { theme } from "@/theme";
 
@@ -28,6 +29,13 @@ export default function App() {
         setDbReady(true);
       });
   }, []);
+
+  // Only start syncing once the local tables exist — the outbox and the
+  // My World mirror both live in them.
+  useEffect(() => {
+    if (!dbReady) return;
+    return startAutoSync();
+  }, [dbReady]);
 
   if (!fontsLoaded || !dbReady) {
     return (
