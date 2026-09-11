@@ -8,10 +8,11 @@ import { BigButton } from "@/components/BigButton";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
 import { getItem, type Memory } from "@/db/myWorldRepo";
+import { useNarration } from "@/hooks/useNarration";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
-import { speakInstructions } from "@/services/speech";
+import { joinForSpeech } from "@/services/speech";
 import { useAuthStore } from "@/stores/authStore";
 import { useMyWorldStore } from "@/stores/myWorldStore";
 import { surfaceCard, theme } from "@/theme";
@@ -21,7 +22,8 @@ type Props = NativeStackScreenProps<RootStackParamList, "MemoryDetail">;
 export function MemoryDetailScreen({ navigation, route }: Props) {
   const { itemId } = route.params;
   const patientId = useAuthStore((state) => state.patientId);
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const { speak, stop, isSpeaking, isAvailable } = useNarration();
 
   const react = useMyWorldStore((state) => state.react);
 
@@ -61,19 +63,30 @@ export function MemoryDetailScreen({ navigation, route }: Props) {
   }, []);
 
   // Wait for the memory before speaking, so the narration includes its name.
-  const spoken = memory
-    ? `${memory.name}. ${memory.story ?? memory.description ?? ""}`.trim()
+  const story = memory?.story ?? memory?.description ?? "";
+  const people = memory?.people.length
+    ? `${t("memoryDetail.people")}. ${joinForSpeech(memory.people, language)}.`
     : "";
+  const spoken = memory ? `${memory.name}. ${story} ${people}`.trim() : "";
 
-  useSpeakOnMount(spoken);
+  useSpeakOnMount(spoken, { enabled: Boolean(memory) });
 
   const onListen = useCallback(() => {
-    if (spoken) void speakInstructions(spoken);
-  }, [spoken]);
+    if (isSpeaking) {
+      stop();
+      return;
+    }
+    // Caregivers write these stories freehand, so the script is whatever they
+    // typed rather than whatever the interface language happens to be.
+    if (spoken) void speak(spoken, { priority: "user", userGenerated: true });
+  }, [isSpeaking, speak, spoken, stop]);
 
   const onPlayAudio = useCallback(async () => {
     const source = memory?.localMediaPath ?? memory?.mediaUri;
     if (!source) return;
+
+    // The recording and the narration would otherwise play over each other.
+    stop();
 
     try {
       await soundRef.current?.unloadAsync();
@@ -86,14 +99,14 @@ export function MemoryDetailScreen({ navigation, route }: Props) {
       // A missing or corrupt file should not crash the screen; the story text
       // is still on display.
     }
-  }, [memory]);
+  }, [memory, stop]);
 
   const onRemember = useCallback(() => {
     if (!memory || !patientId) return;
     setAcknowledged(true);
     void react(patientId, memory.id, "remembered");
-    void speakInstructions(t("memoryDetail.remembered"));
-  }, [memory, patientId, react, t]);
+    void speak(t("memoryDetail.remembered"), { priority: "user" });
+  }, [memory, patientId, react, speak, t]);
 
   if (notFound) {
     return (
@@ -191,12 +204,22 @@ export function MemoryDetailScreen({ navigation, route }: Props) {
       ) : null}
 
       <BigButton
-        label={t("memoryDetail.listen")}
+        label={isSpeaking ? t("memoryDetail.stopListening") : t("memoryDetail.listen")}
         onPress={onListen}
         variant="outline"
-        accessibilityHint={t("memoryDetail.listenHint")}
+        accessibilityHint={
+          isSpeaking
+            ? t("memoryDetail.stopListeningHint")
+            : t("memoryDetail.listenHint")
+        }
         style={styles.button}
       />
+
+      {!isAvailable ? (
+        <Text style={styles.caption} allowFontScaling accessibilityRole="alert">
+          {t("memoryDetail.voiceUnavailable")}
+        </Text>
+      ) : null}
 
       <BigButton
         label={t("memoryDetail.remember")}
