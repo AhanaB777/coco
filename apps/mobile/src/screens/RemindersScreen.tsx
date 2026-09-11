@@ -6,8 +6,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import { ReminderCard } from "@/components/ReminderCard";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
+import { useNarration } from "@/hooks/useNarration";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import { useTranslation } from "@/i18n";
+import { buildReminderUtterance } from "@/services/reminderSpeech";
 import type { RootStackParamList } from "@/navigation/types";
 import { useAuthStore } from "@/stores/authStore";
 import { useReminderStore } from "@/stores/reminderStore";
@@ -24,7 +26,8 @@ export function RemindersScreen({ navigation }: Props) {
     (state) => state.loadTodayReminders
   );
   const toggleDone = useReminderStore((state) => state.toggleDone);
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const { speak } = useNarration();
 
   useSpeakOnMount(t("reminders.instructions"));
 
@@ -75,6 +78,9 @@ export function RemindersScreen({ navigation }: Props) {
               scheduledAt={item.scheduled_at}
               isDone={item.is_done}
               onToggleDone={() => toggleDone(item.id)}
+              onSpeak={() =>
+                void speak(buildReminderUtterance(item, language), { priority: "user" })
+              }
             />
           )}
         />

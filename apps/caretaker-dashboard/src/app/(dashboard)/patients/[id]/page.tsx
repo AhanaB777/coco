@@ -3,17 +3,22 @@ import { notFound } from "next/navigation";
 import { Badge } from "@coco/ui";
 import { ArrowLeft } from "lucide-react";
 
+import { AddMemoryForm } from "@/components/AddMemoryForm";
 import { AiInsightPanel } from "@/components/AiInsightPanel";
-import { MetricTile } from "@/components/PatientCard";
+import { MemoryGallery } from "@/components/MemoryGallery";
+import { MetricTile, PatientAlertsCard } from "@/components/PatientCard";
 import { ReminderList } from "@/components/ReminderList";
 import { SessionTable } from "@/components/SessionTable";
 import {
   getAiSummary,
   getPatient,
   getProgress,
+  listAlerts,
+  listMyWorld,
   listReminders,
   listSessions,
 } from "@/server/caregiver-api";
+import { formatDate } from "@/lib/format-date";
 import { ApiError } from "@/server/server-api";
 
 type Props = {
@@ -33,12 +38,15 @@ export default async function PatientDetailPage({ params }: Props) {
     throw err;
   }
 
-  const [progress, ai, reminders, sessions] = await Promise.all([
-    getProgress(id).catch(() => null),
-    getAiSummary(id).catch(() => null),
-    listReminders(id).catch(() => []),
-    listSessions(id).catch(() => []),
-  ]);
+  const [progress, ai, reminders, sessions, alerts, memories] =
+    await Promise.all([
+      getProgress(id).catch(() => null),
+      getAiSummary(id).catch(() => null),
+      listReminders(id).catch(() => []),
+      listSessions(id).catch(() => []),
+      listAlerts({ patientId: id, status: "active" }).catch(() => []),
+      listMyWorld(id).catch(() => []),
+    ]);
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
@@ -59,13 +67,17 @@ export default async function PatientDetailPage({ params }: Props) {
               {patient.region ?? "North East India"} · Language{" "}
               {patient.preferred_language}
               {progress?.last_active
-                ? ` · Last active ${new Date(progress.last_active).toLocaleDateString()}`
+                ? ` · Last active ${formatDate(progress.last_active) ?? ""}`
                 : ""}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Badge variant="accent">Level {patient.cognitive_level}</Badge>
-            {ai?.analytics.decline_alert ? (
+            {alerts.length > 0 ? (
+              <Badge variant="warning">
+                {alerts.length} alert{alerts.length === 1 ? "" : "s"}
+              </Badge>
+            ) : ai?.analytics.decline_alert ? (
               <Badge variant="warning">Decline alert</Badge>
             ) : null}
           </div>
@@ -95,10 +107,17 @@ export default async function PatientDetailPage({ params }: Props) {
         />
       </section>
 
+      <PatientAlertsCard alerts={alerts} />
+
       <div className="grid gap-6 lg:grid-cols-2">
         <AiInsightPanel ai={ai} />
         <ReminderList patientId={id} reminders={reminders} />
       </div>
+
+      <section aria-label="My World memory journal" className="space-y-6">
+        <MemoryGallery patientId={id} items={memories} />
+        <AddMemoryForm patientId={id} />
+      </section>
 
       <SessionTable sessions={sessions} />
 

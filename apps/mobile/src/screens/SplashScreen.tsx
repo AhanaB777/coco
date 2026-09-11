@@ -8,6 +8,7 @@ import { TopAccent } from "@/components/TopAccent";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
+import { isOfflineError } from "@/services/api";
 import { fetchAuthMe } from "@/services/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { theme, logoPedestal } from "@/theme";
@@ -49,7 +50,19 @@ export function SplashScreen({ navigation }: Props) {
             navigation.replace("Home");
             return;
           }
-        } catch {
+        } catch (error) {
+          // No connection is not an expired session. Sending the patient to
+          // the PIN screen here would put their reminders and My World
+          // memories out of reach in exactly the low-connectivity areas this
+          // app is built for — and they are all cached on the device.
+          //
+          // A token that really has expired is caught by the 401 handler in
+          // services/api as soon as a request gets through.
+          if (isOfflineError(error)) {
+            navigation.replace("Home");
+            return;
+          }
+
           clearSession();
         }
       }

@@ -55,9 +55,12 @@ export function ProgressScreen({ navigation }: Props) {
     return t("progress.summaryNone");
   }, [metrics, t]);
 
-  useSpeakOnMount(
-    metrics ? `${summary} ${t("progress.instructions")}` : t("progress.instructions")
-  );
+  // Gated on the fetch so the narration is spoken once, with the numbers in it,
+  // rather than starting on the instructions and cutting itself off when the
+  // metrics land.
+  useSpeakOnMount(`${summary} ${t("progress.instructions")}`.trim(), {
+    enabled: !isLoading,
+  });
 
   return (
     <ScreenLayout>

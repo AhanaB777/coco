@@ -15,11 +15,11 @@ import { AppIcon } from "@/components/AppIcon";
 import { ChatBubble } from "@/components/ChatBubble";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
+import { useNarration } from "@/hooks/useNarration";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
 import { fetchChatHistory, sendTextMessage, sendVoiceMessage } from "@/services/chat";
-import { speakInstructions } from "@/services/speech";
 import {
   getVoiceStateLabel,
   startRecording,
@@ -32,14 +32,17 @@ import type { ChatMessage } from "@/types/api";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Voice">;
 
-export function VoiceScreen({ navigation }: Props) {
+export function VoiceScreen({ navigation, route }: Props) {
   const [state, setState] = useState<VoiceUiState>("idle");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [textInput, setTextInput] = useState("");
+  // Arriving from a My World memory pre-fills the question, so the patient
+  // only has to press send to start talking about it.
+  const [textInput, setTextInput] = useState(route.params?.seedPrompt ?? "");
   const [loadingHistory, setLoadingHistory] = useState(true);
   const scrollRef = useRef<ScrollView>(null);
   const { t } = useTranslation();
   const language = getPreferredNarratorLanguage();
+  const { speak, stop } = useNarration();
 
   useSpeakOnMount(t("voice.instructions"));
 
@@ -111,10 +114,16 @@ export function VoiceScreen({ navigation }: Props) {
   const handleAssistantReply = useCallback(
     async (assistantMessage: ChatMessage) => {
       setState("speaking");
-      await speakInstructions(assistantMessage.content, { languageCode: language });
+      // The model replies in markdown and may answer in a different script than
+      // the interface language, so this text needs the full treatment.
+      await speak(assistantMessage.content, {
+        languageCode: language,
+        priority: "user",
+        userGenerated: true,
+      });
       setState("idle");
     },
-    [language]
+    [language, speak]
   );
 
   const handleError = useCallback(async () => {
@@ -131,10 +140,10 @@ export function VoiceScreen({ navigation }: Props) {
       },
     ]);
     setState("speaking");
-    await speakInstructions(errorText, { languageCode: language });
+    await speak(errorText, { languageCode: language, priority: "user" });
     setState("idle");
     scrollToEnd();
-  }, [language, scrollToEnd, t]);
+  }, [language, scrollToEnd, speak, t]);
 
   const processVoiceRecording = useCallback(async () => {
     setState("thinking");
@@ -160,6 +169,8 @@ export function VoiceScreen({ navigation }: Props) {
 
     if (state === "idle") {
       try {
+        // Stop narrating first, or Coco talks into its own open microphone.
+        stop();
         await startRecording();
         setState("listening");
       } catch (error) {

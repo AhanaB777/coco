@@ -17,7 +17,7 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-card)] px-6 py-14 text-center">
+    <div className="flex flex-col items-center justify-center rounded-[var(--radius-card)] border border-dashed border-[var(--color-border)] bg-[var(--color-card)] px-6 py-14 text-center shadow-[var(--shadow-card)]">
       <h2 className="text-lg font-semibold text-[var(--color-foreground)]">
         {title}
       </h2>

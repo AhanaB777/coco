@@ -4,8 +4,35 @@
     {
       "name": "expo-web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "web", "--prefix", "apps/mobile"],
+      "runtimeArgs": [
+        "run",
+        "web",
+        "--prefix",
+        "apps/mobile"
+      ],
       "port": 8081
+    },
+    {
+      "name": "caretaker-dashboard",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "apps/caretaker-dashboard"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "caretaker-dashboard-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start",
+        "--prefix",
+        "apps/caretaker-dashboard"
+      ],
+      "port": 3000
     }
   ]
 }

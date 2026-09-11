@@ -4,7 +4,22 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import admin, auth, caregivers, chat, games, patients, progress, reminders, my_world
+from app.routers import (
+    admin,
+    alerts,
+    auth,
+    caregivers,
+    chat,
+    games,
+    media,
+    patients,
+    progress,
+    reminders,
+    my_world,
+    yoga,
+    sync,
+    voice,
+)
 from app.schemas import HealthResponse
 
 app = FastAPI(
@@ -28,8 +43,13 @@ app.include_router(reminders.router, prefix="/api/v1")
 app.include_router(progress.router, prefix="/api/v1")
 app.include_router(caregivers.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1")
-app.include_router(my_world.router)
+app.include_router(my_world.router, prefix="/api/v1")
+app.include_router(media.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
+app.include_router(alerts.router, prefix="/api/v1")
+app.include_router(yoga.router, prefix="/api/v1")
+app.include_router(sync.router, prefix="/api/v1")
+app.include_router(voice.router, prefix="/api/v1")
 
 
 @app.get("/health", response_model=HealthResponse, tags=["health"])

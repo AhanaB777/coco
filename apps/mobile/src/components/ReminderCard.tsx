@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AppIcon } from "@/components/AppIcon";
 import type { ReminderType } from "@/types/api";
 import { useTranslation } from "@/i18n";
+import { buildReminderUtterance, formatReminderTime } from "@/services/reminderSpeech";
 import { surfaceCard, theme } from "@/theme";
 
 interface ReminderCardProps {
@@ -11,6 +12,7 @@ interface ReminderCardProps {
   scheduledAt: string;
   isDone: boolean;
   onToggleDone: () => void;
+  onSpeak: () => void;
 }
 
 export function ReminderCard({
@@ -19,17 +21,28 @@ export function ReminderCard({
   scheduledAt,
   isDone,
   onToggleDone,
+  onSpeak,
 }: ReminderCardProps) {
-  const { t, reminderTypeLabel } = useTranslation();
+  const { t, language, reminderTypeLabel } = useTranslation();
 
-  const timeLabel = new Date(scheduledAt).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // The same words on screen and in the ear. `toLocaleTimeString` followed the
+  // device locale instead of the app language, so a Bengali interface still
+  // showed Latin digits.
+  const timeLabel = formatReminderTime(scheduledAt, language);
+  const spoken = buildReminderUtterance(
+    { title, reminder_type: reminderType, scheduled_at: scheduledAt, is_done: isDone },
+    language
+  );
 
   return (
     <View style={styles.card}>
-      <View style={styles.content}>
+      <Pressable
+        onPress={onSpeak}
+        accessibilityRole="button"
+        accessibilityLabel={spoken}
+        accessibilityHint={t("reminders.speakHint")}
+        style={({ pressed }) => [styles.content, pressed && styles.pressed]}
+      >
         <View style={styles.badge}>
           <Text style={styles.badgeText} allowFontScaling>
             {reminderTypeLabel(reminderType)}
@@ -41,10 +54,19 @@ export function ReminderCard({
         >
           {title}
         </Text>
-        <Text style={styles.time} allowFontScaling>
-          {timeLabel}
-        </Text>
-      </View>
+        <View style={styles.timeRow}>
+          <Text style={styles.time} allowFontScaling>
+            {timeLabel}
+          </Text>
+          {/* Visible, not discovered: the affordance has to be seen to be used. */}
+          <AppIcon
+            name="SpeakerHigh"
+            size={28}
+            color={theme.colors.primary}
+            weight="regular"
+          />
+        </View>
+      </Pressable>
 
       <Pressable
         onPress={onToggleDone}
@@ -83,6 +105,13 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    gap: theme.spacing.xs,
+    minHeight: theme.touch.minTarget,
+    justifyContent: "center",
+  },
+  timeRow: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
   },
   badge: {

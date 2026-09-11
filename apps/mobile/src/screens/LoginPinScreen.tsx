@@ -53,10 +53,13 @@ export function LoginPinScreen({ navigation }: Props) {
     }
   }, [savedUsername, savedPatientName]);
 
+  // The one screen that genuinely changes what it has to say while it stays
+  // focused: moving from the name step to the PIN step needs a fresh read.
   useSpeakOnMount(
     step === "username"
       ? t("login.usernameInstructions")
-      : `${t("login.pinFor", { name: username.trim() })} ${t("login.pinInstructions")}`
+      : `${t("login.pinFor", { name: username.trim() })} ${t("login.pinInstructions")}`,
+    { respeakOnChange: true }
   );
 
   const handleContinue = () => {

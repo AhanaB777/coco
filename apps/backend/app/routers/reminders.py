@@ -7,9 +7,16 @@ from sqlalchemy.orm import Session
 from app.core.deps import AuthContext, get_patient_for_auth, require_roles
 from app.core.security import AuthRole
 from app.database import get_db
-from app.models import Reminder
+from app.models import Patient, Reminder
 from app.schemas.reminder import ReminderCreate, ReminderResponse, ReminderUpdate
+from app.services.alert_engine import evaluate_patient
 from app.services.reminders import enqueue_reminder
+
+
+def _evaluate_patient_alerts(db: Session, patient_id: UUID) -> None:
+    patient = db.get(Patient, patient_id)
+    if patient is not None:
+        evaluate_patient(db, patient)
 
 router = APIRouter(prefix="/reminders", tags=["reminders"])
 
@@ -72,6 +79,7 @@ def create_reminder(
     db.commit()
     db.refresh(reminder)
     enqueue_reminder(reminder.id)
+    _evaluate_patient_alerts(db, patient_uuid)
     return _reminder_response(reminder)
 
 
@@ -99,6 +107,7 @@ def update_reminder(
 
     db.commit()
     db.refresh(reminder)
+    _evaluate_patient_alerts(db, reminder.patient_id)
     return _reminder_response(reminder)
 
 
@@ -111,6 +120,8 @@ def delete_reminder(
     reminder = db.get(Reminder, reminder_id)
     if reminder is None:
         raise HTTPException(status_code=404, detail="Reminder not found")
-    get_patient_for_auth(reminder.patient_id, auth, db)
+    patient_id = reminder.patient_id
+    get_patient_for_auth(patient_id, auth, db)
     db.delete(reminder)
     db.commit()
+    _evaluate_patient_alerts(db, patient_id)
