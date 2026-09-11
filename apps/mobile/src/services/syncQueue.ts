@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getDatabase } from "@/db/database";
 import type { SyncOperationType, SyncOutboxRow } from "@/db/schema";
 import { api } from "@/services/api";
+import { nextAttemptAt } from "@/services/syncBackoff";
 import type { SyncResponse } from "@/types/api";
 
 /**
@@ -65,29 +66,51 @@ export async function enqueue(operation: {
   return operationId;
 }
 
-export async function pendingCount(): Promise<number> {
+/** Rows still waiting to reach the server, optionally of one type. */
+export async function pendingCount(type?: SyncOperationType): Promise<number> {
+  const db = await getDatabase();
+  const row = type
+    ? await db.getFirstAsync<{ count: number }>(
+        `SELECT COUNT(*) AS count FROM sync_outbox
+          WHERE attempts < ? AND operation_type = ?`,
+        [MAX_ATTEMPTS, type]
+      )
+    : await db.getFirstAsync<{ count: number }>(
+        "SELECT COUNT(*) AS count FROM sync_outbox WHERE attempts < ?",
+        [MAX_ATTEMPTS]
+      );
+  return row?.count ?? 0;
+}
+
+/** Rows the server rejected too many times. Kept for diagnosis, never pushed. */
+export async function deadLetterCount(): Promise<number> {
   const db = await getDatabase();
   const row = await db.getFirstAsync<{ count: number }>(
-    "SELECT COUNT(*) AS count FROM sync_outbox"
+    "SELECT COUNT(*) AS count FROM sync_outbox WHERE attempts >= ?",
+    [MAX_ATTEMPTS]
   );
   return row?.count ?? 0;
 }
 
 async function pushBatch(): Promise<{ settled: number; fetched: number }> {
   const db = await getDatabase();
+  const now = new Date();
 
   const rows = await db.getAllAsync<SyncOutboxRow>(
     `SELECT * FROM sync_outbox
       WHERE attempts < ?
+        AND (next_attempt_at IS NULL OR next_attempt_at <= ?)
       ORDER BY client_timestamp
       LIMIT ?`,
-    [MAX_ATTEMPTS, MAX_BATCH]
+    [MAX_ATTEMPTS, now.toISOString(), MAX_BATCH]
   );
 
   if (rows.length === 0) return { settled: 0, fetched: 0 };
 
   const deviceId = await getDeviceId();
 
+  // If this throws (offline, server down, expired token) nothing below runs
+  // and the rows are untouched — a failed *request* is never the row's fault.
   const { data } = await api.post<SyncResponse>("/api/v1/sync", {
     operations: rows.map((row) => ({
       operation_id: row.operation_id,
@@ -104,6 +127,7 @@ async function pushBatch(): Promise<{ settled: number; fetched: number }> {
     .map((r) => r.operation_id);
 
   const rejected = data.results.filter((r) => r.status === "failed");
+  const attemptsById = new Map(rows.map((row) => [row.operation_id, row.attempts]));
 
   await db.withTransactionAsync(async () => {
     for (const operationId of settled) {
@@ -112,11 +136,17 @@ async function pushBatch(): Promise<{ settled: number; fetched: number }> {
       ]);
     }
     for (const result of rejected) {
+      const attempts = (attemptsById.get(result.operation_id) ?? 0) + 1;
       await db.runAsync(
         `UPDATE sync_outbox
-            SET attempts = attempts + 1, last_error = ?
+            SET attempts = ?, last_error = ?, next_attempt_at = ?
           WHERE operation_id = ?`,
-        [result.error ?? "Unknown error", result.operation_id]
+        [
+          attempts,
+          result.error ?? "Unknown error",
+          nextAttemptAt(attempts, now),
+          result.operation_id,
+        ]
       );
     }
   });
@@ -136,7 +166,7 @@ export function flush(): Promise<number> {
     try {
       // Loop so an outbox that built up over days drains in one go. Stop
       // on a partial batch (nothing left) or on a batch where nothing stuck —
-      // those rows now carry a failure count and will age out of the queue.
+      // those rows now carry a failure count and a retry time.
       for (;;) {
         const { settled, fetched } = await pushBatch();
         total += settled;

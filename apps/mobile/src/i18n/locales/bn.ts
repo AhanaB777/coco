@@ -94,6 +94,8 @@ export const bn: Translations = {
     title: "খেলুন",
     subtitle: "স্মৃতি, মনোযোগ ও চেনার খেলা",
     gameHint: "{{game}} খেলা খুলুন",
+    offlineBanner: "আপনি অফলাইনে আছেন। খেলা এখনও চলবে এবং পরে সিঙ্ক হবে।",
+    pendingSync: "সিঙ্কের অপেক্ষায়: {{count}}",
   },
   games: {
     memory_match: "স্মৃতি মিল",
@@ -120,6 +122,7 @@ export const bn: Translations = {
     watchClosely: "মন দিয়ে দেখুন...",
     yourTurn: "আবার করুন!",
     round: "রাউন্ড {{count}}",
+    nextLevel: "পরের বার: স্তর {{level}}",
   },
   namingItems: {
     Elephant: "হাতি",
@@ -145,14 +148,6 @@ export const bn: Translations = {
     oneStar: ["আপনি শেষ করেছেন - এটাই সবচেয়ে গুরুত্বপূর্ণ।", "ভালো খেলেছেন। প্রতিটি রাউন্ড মনকে সক্রিয় রাখে।", "শেষ করার জন্য খুব ভালো করেছেন।"],
     twoStars: ["দারুণ চেষ্টা - আপনি আরও ভালো হচ্ছেন!", "খুব ভালো - আজ মনোযোগ ভালো ছিল।", "ভালো কাজ - শান্ত ও স্থির।"],
     threeStars: ["অসাধারণ! আজ আপনি দুর্দান্ত খেলেছেন!", "দারুণ রাউন্ড - তিনটি তারা!", "চমৎকার মনোযোগ - একদম নিখুঁত!"],
-  },
-  gameStub: {
-    instructions: "এই খেলা শীঘ্রই আসছে।",
-    subtitle: "খেলা শীঘ্রই আসবে",
-    title: "শীঘ্রই আসছে",
-    body: "{{game}} খেলা এখানে দেখা যাবে। একটি অনুশীলন সেশন আপনার অগ্রগতিতে সংরক্ষিত হয়েছে।",
-    back: "খেলায় ফিরে যান",
-    backHint: "খেলার তালিকায় ফিরে যান",
   },
   reminders: {
     instructions:
@@ -219,6 +214,7 @@ export const bn: Translations = {
     summaryPlayed: "আপনি মোট {{count}}টি খেলা খেলেছেন।",
     summaryPlayedPlural: "আপনি মোট {{count}}টি খেলা খেলেছেন।",
     summaryNone: "এখনও কোনো খেলা নেই। শুরু করতে হোমে খেলুন ট্যাপ করুন।",
+    offlineBanner: "আপনি অফলাইনে আছেন। এই ডিভাইসে সংরক্ষিত অগ্রগতি দেখানো হচ্ছে।",
   },
   voice: {
     instructions:

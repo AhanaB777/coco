@@ -1,8 +1,9 @@
 import { AppState, type AppStateStatus } from "react-native";
 import * as Network from "expo-network";
 
-import { useAuthStore } from "@/stores/authStore";
 import { syncNow } from "@/services/syncService";
+import { useAuthStore } from "@/stores/authStore";
+import { useGameStore } from "@/stores/gameStore";
 
 /**
  * Drives background sync from the two moments that matter on a device with
@@ -21,6 +22,9 @@ async function runSync(): Promise<void> {
   running = true;
   try {
     await syncNow(patientId);
+    // The outbox may have drained and the pull may have added history, so
+    // the Play screen tiles and pending badge need a fresh read.
+    await useGameStore.getState().loadSummary(patientId);
   } finally {
     running = false;
   }

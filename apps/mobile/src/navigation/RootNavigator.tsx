@@ -1,7 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import type { RootStackParamList } from "@/navigation/types";
-import { GameStubScreen } from "@/screens/GameStubScreen";
 import { HomeScreen } from "@/screens/HomeScreen";
 import { LoginPinScreen } from "@/screens/LoginPinScreen";
 import { MemoryDetailScreen } from "@/screens/MemoryDetailScreen";
@@ -34,7 +33,6 @@ export function RootNavigator() {
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="Reminders" component={RemindersScreen} />
       <Stack.Screen name="Play" component={PlayScreen} />
-      <Stack.Screen name="GameStub" component={GameStubScreen} />
       <Stack.Screen name="Memory" component={MemoryMatchScreen} />
       <Stack.Screen name="Pattern" component={PatternScreen} />
       <Stack.Screen name="Naming" component={NameItScreen} />

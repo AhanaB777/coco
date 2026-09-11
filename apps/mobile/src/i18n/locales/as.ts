@@ -94,6 +94,8 @@ export const as: Translations = {
     title: "খেলক",
     subtitle: "স্মৃতি, মনোযোগ আৰু চিনাক্তকৰণৰ খেল",
     gameHint: "{{game}} খেল খোলক",
+    offlineBanner: "আপুনি অফলাইন আছে। খেলবোৰ এতিয়াও চলিব আৰু পিছত ছিংক হ'ব।",
+    pendingSync: "ছিংকৰ বাবে অপেক্ষাত: {{count}}",
   },
   games: {
     memory_match: "স্মৃতি মিল",
@@ -120,6 +122,7 @@ export const as: Translations = {
     watchClosely: "মন দি চাওক...",
     yourTurn: "এতিয়া আপোনাৰ পাল!",
     round: "ৰাউণ্ড {{count}}",
+    nextLevel: "পৰৱৰ্তী বাৰ: স্তৰ {{level}}",
   },
   namingItems: {
     Elephant: "হাতী",
@@ -145,14 +148,6 @@ export const as: Translations = {
     oneStar: ["আপুনি সম্পূৰ্ণ কৰিলে - এইটোৱেই আটাইতকৈ গুৰুত্বপূৰ্ণ।", "ভাল খেলিলে। প্ৰতিটো ৰাউণ্ডে মনটো সজাগ ৰাখে।", "সম্পূৰ্ণ কৰাৰ বাবে বৰ ভাল কৰিলে।"],
     twoStars: ["বৰ ভাল চেষ্টা - আপুনি আৰু ভাল কৰি আছে!", "শাবাশ - আজি আপোনাৰ মনোযোগ ভাল আছিল।", "ভাল কাম - শান্ত আৰু স্থিৰ।"],
     threeStars: ["অসাধাৰণ! আজি আপুনি বৰ ভাল কৰিলে!", "আচৰিত ৰাউণ্ড - তিনিটা তৰা!", "বৰ ভাল মনোযোগ - একেবাৰে নিখুঁত!"],
-  },
-  gameStub: {
-    instructions: "এই খেল শীঘ্ৰে আহিব।",
-    subtitle: "খেল শীঘ্ৰে আহিব",
-    title: "শীঘ্ৰে আহিব",
-    body: "{{game}} খেল ইয়াত দেখা যাব। এটা অনুশীলন অধিবেশন আপোনাৰ অগ্ৰগতিত সংৰক্ষিত হ'ল।",
-    back: "খেললৈ উভতি যাওক",
-    backHint: "খেলৰ তালিকালৈ উভতি যাওক",
   },
   reminders: {
     instructions:
@@ -219,6 +214,7 @@ export const as: Translations = {
     summaryPlayed: "আপুনি মুঠ {{count}}টা খেল খেলিছে।",
     summaryPlayedPlural: "আপুনি মুঠ {{count}}টা খেল খেলিছে।",
     summaryNone: "এতিয়ালৈকে কোনো খেল নাই। আৰম্ভ কৰিবলৈ ঘৰত খেলক টিপক।",
+    offlineBanner: "আপুনি অফলাইন আছে। এই ডিভাইচত সংৰক্ষিত অগ্ৰগতি দেখুওৱা হৈছে।",
   },
   voice: {
     instructions:

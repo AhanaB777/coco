@@ -33,6 +33,9 @@ class SyncOperation(Base):
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="synced")
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Id of the domain row the operation produced, so a replay can be
+    # answered with something the client can resolve.
+    resource_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     client_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -94,6 +94,8 @@ export const hi: Translations = {
     title: "खेलें",
     subtitle: "स्मृति, ध्यान और पहचान के खेल",
     gameHint: "{{game}} खेल खोलें",
+    offlineBanner: "आप ऑफ़लाइन हैं। खेल अभी भी चलेंगे और बाद में सिंक होंगे।",
+    pendingSync: "सिंक की प्रतीक्षा में: {{count}}",
   },
   games: {
     memory_match: "स्मृति मिलान",
@@ -120,6 +122,7 @@ export const hi: Translations = {
     watchClosely: "ध्यान से देखें...",
     yourTurn: "अब आपकी बारी - दोहराएं!",
     round: "राउंड {{count}}",
+    nextLevel: "अगली बार: स्तर {{level}}",
   },
   namingItems: {
     Elephant: "हाथी",
@@ -145,14 +148,6 @@ export const hi: Translations = {
     oneStar: ["आपने पूरा किया - यही सबसे महत्वपूर्ण है।", "बहुत अच्छा। हर राउंड आपके दिमाग को सक्रिय रखता है।", "इसे पूरा करने के लिए बहुत अच्छा किया।"],
     twoStars: ["बहुत अच्छा प्रयास - आप और बेहतर हो रहे हैं!", "शाबाश - आज आपका ध्यान अच्छा था।", "अच्छा काम - शांत और स्थिर।"],
     threeStars: ["उत्कृष्ट! आज आपने कमाल कर दिया!", "शानदार राउंड - तीन सितारे!", "बहुत अच्छा ध्यान - आपने बेहतरीन खेला!"],
-  },
-  gameStub: {
-    instructions: "यह खेल जल्द आ रहा है।",
-    subtitle: "खेल जल्द आएगा",
-    title: "जल्द आ रहा है",
-    body: "{{game}} खेल यहाँ दिखेगा। एक अभ्यास सत्र आपकी प्रगति में सहेजा गया है।",
-    back: "खेलों पर वापस",
-    backHint: "खेल सूची पर लौटें",
   },
   reminders: {
     instructions:
@@ -219,6 +214,7 @@ export const hi: Translations = {
     summaryPlayed: "आपने कुल {{count}} खेल खेला है।",
     summaryPlayedPlural: "आपने कुल {{count}} खेल खेले हैं।",
     summaryNone: "अभी कोई खेल दर्ज नहीं। शुरू करने के लिए होम पर खेलें टैप करें।",
+    offlineBanner: "आप ऑफ़लाइन हैं। इस डिवाइस पर सहेजी गई प्रगति दिखाई जा रही है।",
   },
   voice: {
     instructions:

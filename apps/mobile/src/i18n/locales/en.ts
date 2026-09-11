@@ -94,6 +94,8 @@ export const en: Translations = {
     title: "Play",
     subtitle: "Memory, attention, and recognition games",
     gameHint: "Open {{game}} game",
+    offlineBanner: "You are offline. Games still work and will sync later.",
+    pendingSync: "Waiting to sync: {{count}}",
   },
   games: {
     memory_match: "Memory Match",
@@ -123,6 +125,7 @@ export const en: Translations = {
     watchClosely: "Watch closely...",
     yourTurn: "Your turn - repeat it!",
     round: "Round {{count}}",
+    nextLevel: "Next time: Level {{level}}",
   },
   namingItems: {
     Elephant: "Elephant",
@@ -176,14 +179,6 @@ export const en: Translations = {
       "Amazing round - three stars!",
       "Fantastic focus - perfectly played!",
     ],
-  },
-  gameStub: {
-    instructions: "This game is coming soon. Your teammate will add the game here.",
-    subtitle: "Game coming soon",
-    title: "Coming soon",
-    body: "The {{game}} game will appear in this space. A practice session has been saved to your progress.",
-    back: "Back to games",
-    backHint: "Return to the game list",
   },
   reminders: {
     instructions:
@@ -250,6 +245,7 @@ export const en: Translations = {
     summaryPlayed: "You have played {{count}} game in total.",
     summaryPlayedPlural: "You have played {{count}} games in total.",
     summaryNone: "No games recorded yet. Tap Play on the home screen to start.",
+    offlineBanner: "You are offline. Showing progress saved on this device.",
   },
   voice: {
     instructions:

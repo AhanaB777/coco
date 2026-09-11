@@ -1,52 +1,34 @@
-import type { GameSession, GameSessionCreate, GameType, DifficultyResponse } from "@/types/api";
+import type { DifficultyResponse, SyncPullResponse } from "@/types/api";
 
 import { api } from "@/services/api";
 
-export interface LaunchGameResult {
-  started: boolean;
-  message: string;
-}
-
+/**
+ * Asks the coco_engine what level the patient should play next.
+ *
+ * Called on the way into a game, so the timeout is short: a slow link must
+ * not keep the patient waiting when the local rule is a fine fallback.
+ */
 export async function getGameDifficulty(
-  patientId: string
+  patientId: string,
+  options: { timeoutMs?: number } = {}
 ): Promise<DifficultyResponse> {
   const { data } = await api.get<DifficultyResponse>(
-    `/api/v1/games/difficulty/${patientId}`
+    `/api/v1/games/difficulty/${patientId}`,
+    { timeout: options.timeoutMs }
   );
 
   return data;
 }
 
-export async function createGameSession(
-  payload: GameSessionCreate
-): Promise<GameSession> {
-  const { data } = await api.post<GameSession>(
-    "/api/v1/games/sessions",
-    payload
+/** Everything the server changed for this patient since `since` (all, if null). */
+export async function fetchSyncPull(
+  patientId: string,
+  since: string | null
+): Promise<SyncPullResponse> {
+  const { data } = await api.get<SyncPullResponse>(
+    `/api/v1/sync/pull/${patientId}`,
+    { params: since ? { since } : undefined }
   );
-  return data;
-}
 
-/** Stub launch — records a demo session to the backend when the game shell is used. */
-export async function launchGame(
-  gameType: GameType,
-  patientId: string
-): Promise<LaunchGameResult> {
-  try {
-    await createGameSession({
-      patient_id: patientId,
-      game_type: gameType,
-      score: 75,
-      duration_seconds: 120,
-    });
-    return {
-      started: true,
-      message: `Session recorded for ${gameType}`,
-    };
-  } catch {
-    return {
-      started: false,
-      message: `Could not save session for ${gameType}`,
-    };
-  }
+  return data;
 }

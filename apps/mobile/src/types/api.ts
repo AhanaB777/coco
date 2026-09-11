@@ -39,7 +39,19 @@ export interface GameSession {
   score?: number | null;
   duration_seconds?: number | null;
   difficulty_level: number;
+  hints_used?: number | null;
   played_at: string;
+  created_at?: string;
+}
+
+/** Body of a `game_result` sync operation. `session_id` is chosen on-device. */
+export interface GameResultPayload {
+  session_id: string;
+  game_type: GameType;
+  score: number;
+  duration_seconds: number;
+  difficulty_level: number;
+  hints_used: number;
 }
 
 export interface GameSessionCreate {

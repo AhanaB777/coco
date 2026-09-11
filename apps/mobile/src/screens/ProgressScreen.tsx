@@ -4,9 +4,12 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ScreenLayout } from "@/components/ScreenLayout";
+import { listSessions } from "@/db/gameRepo";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
+import { isOfflineError } from "@/services/api";
+import { computeLocalMetrics } from "@/services/gameProgress";
 import { fetchPatientProgress } from "@/services/progress";
 import { useAuthStore } from "@/stores/authStore";
 import type { ProgressMetrics } from "@/types/api";
@@ -19,24 +22,46 @@ export function ProgressScreen({ navigation }: Props) {
   const [metrics, setMetrics] = useState<ProgressMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
   const { t } = useTranslation();
 
+  // Cache-first, like My World: the numbers from this device show at once,
+  // then the server's (which also count sessions from other devices) replace
+  // them. Offline, the local numbers simply stay.
   useEffect(() => {
     if (!patientId) return;
     let active = true;
     setIsLoading(true);
     setError(null);
+    setIsOffline(false);
 
-    fetchPatientProgress()
-      .then((data) => {
+    void (async () => {
+      let hasLocal = false;
+      try {
+        const local = computeLocalMetrics(await listSessions(patientId));
+        if (active) {
+          setMetrics(local);
+          setIsLoading(false);
+          hasLocal = true;
+        }
+      } catch {
+        // No local history; wait for the server.
+      }
+
+      try {
+        const data = await fetchPatientProgress();
         if (active) setMetrics(data);
-      })
-      .catch(() => {
-        if (active) setError(t("progress.error"));
-      })
-      .finally(() => {
+      } catch (err) {
+        if (!active) return;
+        if (isOfflineError(err) && hasLocal) {
+          setIsOffline(true);
+        } else if (!hasLocal) {
+          setError(t("progress.error"));
+        }
+      } finally {
         if (active) setIsLoading(false);
-      });
+      }
+    })();
 
     return () => {
       active = false;
@@ -86,6 +111,11 @@ export function ProgressScreen({ navigation }: Props) {
       ) : metrics ? (
         <View style={styles.card}>
           <View style={styles.goldAccent} />
+          {isOffline ? (
+            <Text style={styles.offlineText} allowFontScaling accessibilityRole="alert">
+              {t("progress.offlineBanner")}
+            </Text>
+          ) : null}
           <Text style={styles.celebration} allowFontScaling>
             {t("progress.wellDone")}
           </Text>
@@ -152,6 +182,10 @@ const styles = StyleSheet.create({
   errorText: {
     ...theme.typography.body,
     color: theme.colors.destructive,
+  },
+  offlineText: {
+    ...theme.typography.caption,
+    color: theme.colors.muted,
   },
   statsRow: {
     flexDirection: "row",

@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useCallback } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
@@ -10,9 +10,10 @@ import type { GameType } from "@/types/api";
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
+import { useAuthStore } from "@/stores/authStore";
+import { useGameStore } from "@/stores/gameStore";
+import { useNetworkStatus } from "@/stores/networkStore";
 import { theme } from "@/theme";
-import { loadAllProgress } from "@/utils/storage";
-import type { GameId, GameProgress } from "@/utils/types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Play">;
 
@@ -50,26 +51,19 @@ const GAME_ICONS = {
   object_recognition: "Scan",
 } as const;
 
-const GAME_PROGRESS_IDS: Record<GameType, GameId> = {
-  memory_match: "memory",
-  sequence_recall: "pattern",
-  object_recognition: "naming",
-};
-
 export function PlayScreen({ navigation }: Props) {
   const { t, gameLabel } = useTranslation();
-  const [progress, setProgress] = useState<Record<GameId, GameProgress>>();
+  const patientId = useAuthStore((state) => state.patientId);
+  const summary = useGameStore((state) => state.summary);
+  const pendingSyncCount = useGameStore((state) => state.pendingSyncCount);
+  const loadSummary = useGameStore((state) => state.loadSummary);
+  const isConnected = useNetworkStatus();
 
+  // Re-read on every focus: a game just finished may have moved a level.
   useFocusEffect(
     useCallback(() => {
-      let cancelled = false;
-      void loadAllProgress().then((loaded) => {
-        if (!cancelled) setProgress(loaded);
-      });
-      return () => {
-        cancelled = true;
-      };
-    }, [])
+      void loadSummary(patientId);
+    }, [loadSummary, patientId])
   );
 
   useSpeakOnMount(t("play.instructions"));
@@ -82,6 +76,20 @@ export function PlayScreen({ navigation }: Props) {
         onHomePress={() => navigation.navigate("Home")}
       />
 
+      {!isConnected ? (
+        <View style={styles.banner} accessibilityRole="alert">
+          <Text style={styles.bannerText} allowFontScaling>
+            {t("play.offlineBanner")}
+          </Text>
+        </View>
+      ) : pendingSyncCount > 0 ? (
+        <View style={styles.banner}>
+          <Text style={styles.bannerText} allowFontScaling>
+            {t("play.pendingSync", { count: pendingSyncCount })}
+          </Text>
+        </View>
+      ) : null}
+
       <View style={styles.list}>
         {GAMES.map((game) => (
           <IconTile
@@ -92,8 +100,8 @@ export function PlayScreen({ navigation }: Props) {
             accentColor={game.accent}
             backgroundColor={game.bg}
             gameLayout
-            level={progress?.[GAME_PROGRESS_IDS[game.type]]?.level}
-            stars={progress?.[GAME_PROGRESS_IDS[game.type]]?.bestStars}
+            level={summary[game.type]?.nextLevel}
+            stars={summary[game.type]?.bestStars}
             onPress={() =>
               navigation.navigate(game.route, { gameType: game.type })
             }
@@ -108,5 +116,17 @@ export function PlayScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   list: {
     gap: theme.touch.gap,
+  },
+  banner: {
+    padding: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.goldLight,
+    borderWidth: theme.border.subtleWidth,
+    borderColor: theme.colors.goldBorder,
+  },
+  bannerText: {
+    ...theme.typography.caption,
+    color: theme.colors.foreground,
   },
 });

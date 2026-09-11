@@ -25,9 +25,8 @@ import {
   PATTERN_MAX_MISTAKES_PER_ROUND,
   PATTERN_MAX_HINTS,
 } from '@/data/patternData';
-import { loadProgress, recordSession } from '@/utils/storage';
-import { createGameSession, getGameDifficulty } from '@/services/games';
 import { useAuthStore } from '@/stores/authStore';
+import { useGameStore } from '@/stores/gameStore';
 import { useTranslation } from '@/i18n';
 import { scoreToStars } from '@/utils/difficulty';
 import { delay } from '@/utils/delay';
@@ -76,19 +75,8 @@ export function PatternScreen() {
   const startTimeRef = useRef(0);
   const sessionTokenRef = useRef(0);
 
-  async function getStartingLevel(): Promise<number> {
-    try {
-      if (!patientId) {
-        const local = await loadProgress('pattern');
-        return local.level;
-      }
-
-      const difficulty = await getGameDifficulty(patientId);
-      return difficulty.suggested_difficulty;
-    } catch {
-      const local = await loadProgress('pattern');
-      return local.level;
-    }
+  function getStartingLevel(): Promise<number> {
+    return useGameStore.getState().startLevelFor(patientId, 'sequence_recall');
   }
 
   const panelSize = useMemo(() => {
@@ -151,25 +139,23 @@ export function PatternScreen() {
     setResultStars(stars);
     setSessionComplete(true);
     setPhase('idle');
-    recordSession('pattern', {
-      date: new Date().toISOString(),
-      stars,
-      level,
-      hintsUsed: hintsUsedRef.current,
-      durationMs,
-    }).then((updated) => setNextLevel(updated.level));
 
-    if (patientId) {
-      void createGameSession({
-        patient_id: patientId,
-        game_type: 'sequence_recall',
-        score: Math.round(accuracy * 100),
-        duration_seconds: Math.round(durationMs / 1000),
-        difficulty_level: level,
-      }).catch((error) => {
+    // Saved on-device and queued for the server in one step; the modal
+    // does not wait for either.
+    useGameStore
+      .getState()
+      .finishSession({
+        patientId,
+        gameType: 'sequence_recall',
+        accuracy,
+        hintsUsed: hintsUsedRef.current,
+        durationMs,
+        level,
+      })
+      .then((result) => setNextLevel(result.nextLevel))
+      .catch((error) => {
         console.warn('Failed to save pattern game session', error);
       });
-    }
   }
 
   function handlePanelPress(index: number) {
@@ -357,6 +343,11 @@ export function PatternScreen() {
             ) : null}
             <Text style={styles.modalTitle}>{t('gameUi.roundComplete')}</Text>
             <Text style={styles.modalMessage}>{sessionEndMessage}</Text>
+            {nextLevel !== null ? (
+                <Text style={styles.modalNext}>
+                    {t('gameUi.nextLevel', { level: nextLevel })}
+                </Text>
+            ) : null}
 
             <View style={styles.modalButtons}>
               <BigButton
@@ -444,6 +435,12 @@ const styles = StyleSheet.create({
     color: theme.colors.muted,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
+  },
+  modalNext: {
+      ...theme.typography.caption,
+      color: theme.colors.muted,
+      textAlign: 'center',
+      marginBottom: theme.spacing.md,
   },
   modalButtons: {
     width: '100%',

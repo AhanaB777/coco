@@ -1,9 +1,12 @@
+import type { GameType } from "@/types/api";
+
 export type ReminderType = "medicine" | "hydration" | "appointment";
 
-export type GameType =
-  | "memory_match"
-  | "sequence_recall"
-  | "object_recognition";
+/**
+ * Bump when a migration in `database.ts` is added. Stored in
+ * `PRAGMA user_version` so an upgraded install only runs what it is missing.
+ */
+export const SCHEMA_VERSION = 1;
 
 export interface PatientProfile {
   id: string;
@@ -24,13 +27,20 @@ export interface Reminder {
   completed_at: string | null;
 }
 
-export interface GameSession {
+/** A completed game as stored on-device. Stars are derived from score + hints. */
+export interface GameSessionRow {
   id: string;
   patient_id: string;
   game_type: GameType;
   score: number | null;
   duration_seconds: number | null;
+  difficulty_level: number;
+  hints_used: number | null;
+  /** ISO, device clock — the moment the game finished. */
   played_at: string;
+  /** 1 once the server has confirmed it (via a pull), 0 while local-only. */
+  synced: number;
+  created_at: string;
 }
 
 export const CREATE_PATIENT_PROFILES_TABLE = `
@@ -63,8 +73,17 @@ export const CREATE_GAME_SESSIONS_TABLE = `
     game_type TEXT NOT NULL,
     score INTEGER,
     duration_seconds INTEGER,
-    played_at TEXT NOT NULL
+    difficulty_level INTEGER NOT NULL DEFAULT 1,
+    hints_used INTEGER,
+    played_at TEXT NOT NULL,
+    synced INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
   );
+`;
+
+export const CREATE_GAME_SESSIONS_INDEX = `
+  CREATE INDEX IF NOT EXISTS idx_game_sessions_patient_game
+    ON game_sessions (patient_id, game_type, played_at);
 `;
 
 export type MyWorldCategory =
@@ -121,6 +140,8 @@ export interface SyncOutboxRow {
   client_timestamp: string;
   attempts: number;
   last_error: string | null;
+  /** ISO; the row is skipped by a push until this moment. Null = ready. */
+  next_attempt_at: string | null;
 }
 
 export const CREATE_MY_WORLD_ITEMS_TABLE = `
@@ -164,11 +185,12 @@ export const CREATE_SYNC_OUTBOX_TABLE = `
     payload TEXT NOT NULL,
     client_timestamp TEXT NOT NULL,
     attempts INTEGER NOT NULL DEFAULT 0,
-    last_error TEXT
+    last_error TEXT,
+    next_attempt_at TEXT
   );
 `;
 
-/** Key/value scratch space - currently the /sync/pull watermark per patient. */
+/** Key/value scratch space - the per-patient pull watermarks live here. */
 export const CREATE_SYNC_META_TABLE = `
   CREATE TABLE IF NOT EXISTS sync_meta (
     key TEXT PRIMARY KEY NOT NULL,

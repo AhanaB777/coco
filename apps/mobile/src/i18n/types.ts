@@ -89,6 +89,8 @@ export interface Translations {
     title: string;
     subtitle: string;
     gameHint: string;
+    offlineBanner: string;
+    pendingSync: string;
   };
   games: Record<GameType, string>;
   gameUi: {
@@ -111,6 +113,7 @@ export interface Translations {
     watchClosely: string;
     yourTurn: string;
     round: string;
+    nextLevel: string;
   };
   namingItems: Record<string, string>;
   gameFeedback: {
@@ -119,14 +122,6 @@ export interface Translations {
     oneStar: string[];
     twoStars: string[];
     threeStars: string[];
-  };
-  gameStub: {
-    instructions: string;
-    subtitle: string;
-    title: string;
-    body: string;
-    back: string;
-    backHint: string;
   };
   reminders: {
     instructions: string;
@@ -186,6 +181,7 @@ export interface Translations {
     summaryPlayed: string;
     summaryPlayedPlural: string;
     summaryNone: string;
+    offlineBanner: string;
   };
   voice: {
     instructions: string;

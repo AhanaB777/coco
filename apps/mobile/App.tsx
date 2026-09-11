@@ -11,6 +11,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { initializeDatabase } from "@/db/database";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { startAutoSync } from "@/services/autoSync";
+import { startNetworkWatch } from "@/stores/networkStore";
 import "@/services/notifications";
 import {
   configurePlaybackAudioSession,
@@ -52,7 +53,12 @@ export default function App() {
   // My World mirror both live in them.
   useEffect(() => {
     if (!dbReady) return;
-    return startAutoSync();
+    const stopNetworkWatch = startNetworkWatch();
+    const stopAutoSync = startAutoSync();
+    return () => {
+      stopAutoSync();
+      stopNetworkWatch();
+    };
   }, [dbReady]);
 
   if (!fontsLoaded || !dbReady) {

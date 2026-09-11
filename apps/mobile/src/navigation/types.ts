@@ -5,7 +5,6 @@ export type RootStackParamList = {
   LoginPin: undefined;
   Home: undefined;
   Play: undefined;
-  GameStub: { gameType: GameType };
   Memory: { gameType: GameType };
   Pattern: { gameType: GameType };
   Naming: { gameType: GameType };
