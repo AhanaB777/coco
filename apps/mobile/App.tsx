@@ -11,6 +11,8 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { initializeDatabase } from "@/db/database";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { startAutoSync } from "@/services/autoSync";
+import { useAuthStore } from "@/stores/authStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { startNetworkWatch } from "@/stores/networkStore";
 import "@/services/notifications";
 import {
@@ -22,6 +24,10 @@ import { theme } from "@/theme";
 
 export default function App() {
   const [dbReady, setDbReady] = useState(false);
+  // Saved language, narration switch and reading speed must be in place
+  // before the first screen mounts — the splash speaks as soon as it does.
+  const authHydrated = useAuthStore((state) => state.hasHydrated);
+  const settingsHydrated = useSettingsStore((state) => state.hasHydrated);
   const [fontsLoaded] = useFonts({
     AtkinsonHyperlegible_400Regular,
     AtkinsonHyperlegible_700Bold,
@@ -61,7 +67,7 @@ export default function App() {
     };
   }, [dbReady]);
 
-  if (!fontsLoaded || !dbReady) {
+  if (!fontsLoaded || !dbReady || !authHydrated || !settingsHydrated) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator size="large" color={theme.colors.primary} />

@@ -31,7 +31,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       patientId: null,
       patientName: null,
       loginUsername: null,
@@ -52,7 +52,12 @@ export const useAuthStore = create<AuthState>()(
           patientId,
           patientName,
           loginUsername,
-          preferredLanguage: normalizeNarratorLanguageCode(preferredLanguage),
+          // The language chosen on this phone outranks the caregiver's default
+          // from the server — otherwise every restart and login would undo
+          // the patient's own choice in Settings.
+          preferredLanguage:
+            get().preferredLanguage ??
+            normalizeNarratorLanguageCode(preferredLanguage),
           isAuthenticated: true,
         }),
 
@@ -87,8 +92,10 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+      // Flip the flag even when storage fails to read: the app gates on it
+      // and must never be stuck on the splash spinner.
+      onRehydrateStorage: () => () => {
+        useAuthStore.setState({ hasHydrated: true });
       },
     }
   )
