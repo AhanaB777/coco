@@ -6,6 +6,8 @@ import { getNarrationSettings } from "@/stores/settingsStore";
 import { getPreferredNarratorLanguage } from "@/stores/authStore";
 
 import { chunkForSpeech, type SpeechChunk } from "./chunk";
+import { buildLadder, type Attempt } from "./ladder";
+import { bridgeForVoice } from "./scriptBridge";
 import { normalizeForSpeech } from "./textNormalizer";
 import {
   detectScript,
@@ -117,45 +119,6 @@ const MAX_ATTEMPTS = 3;
 function estimateMs(text: string, rate: number): number {
   const words = text.split(/\s+/).filter(Boolean).length || 1;
   return (words / (WORDS_PER_SECOND * Math.max(rate, 0.1))) * 1000;
-}
-
-interface Attempt {
-  language?: string;
-  voice?: string;
-}
-
-/**
- * Progressively simpler ways to say the same chunk.
- *
- * The last rung — letting the device pick its own default voice — is gated on
- * Latin script. For an Indic language that default is almost always en-US, and
- * handing Bengali text to an English engine is the exact failure this whole
- * module exists to prevent.
- */
-function buildLadder(resolved: ResolvedVoice): Attempt[] {
-  const ladder: Attempt[] = [{ language: resolved.languageTag, voice: resolved.voiceId }];
-
-  if (resolved.voiceId) {
-    ladder.push({ language: resolved.languageTag, voice: undefined });
-  }
-
-  const localAlternative = resolved.alternatives.find(
-    (alternative) => alternative.voiceId && !/-network$/i.test(alternative.voiceId)
-  );
-  if (localAlternative) {
-    ladder.push({ language: localAlternative.languageTag, voice: localAlternative.voiceId });
-  }
-
-  const base = resolved.languageTag?.split("-")[0];
-  if (base && base !== resolved.languageTag) {
-    ladder.push({ language: base, voice: undefined });
-  }
-
-  if (scriptForLanguage(resolved.requestedCode) === "latin") {
-    ladder.push({ language: undefined, voice: undefined });
-  }
-
-  return ladder;
 }
 
 function speakOnce(
@@ -287,7 +250,12 @@ export async function speak(text: string, opts: SpeakOptions = {}): Promise<Spea
     }
 
     lastDiagnostic = resolved;
-    const spoken = normalizeForSpeech(segment.text, { language: resolved.spokenCode });
+    // Bridge after normalising so spelled-out numbers and times are covered
+    // too, and before chunking so the lengths are the final ones.
+    const spoken = bridgeForVoice(
+      normalizeForSpeech(segment.text, { language: resolved.spokenCode }),
+      resolved
+    );
     const chunks = chunkForSpeech(spoken);
 
     for (let index = 0; index < chunks.length; index += 1) {

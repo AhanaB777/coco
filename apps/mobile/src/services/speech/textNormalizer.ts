@@ -105,10 +105,23 @@ export function expandUrls(input: string, lang: NarratorLanguageCode): string {
     .replace(/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g, link);
 }
 
+/**
+ * In Assamese a consonant followed by ’ is a vowel (ক’ক’ is the app's own
+ * name), not a quote. Only that ’ survives; every other curly quote goes.
+ */
+const ASSAMESE_O_CARRIER = /[\u0995-\u09B9\u09DC-\u09DF\u09F0\u09F1]/;
+
+function stripCurlyQuotes(input: string): string {
+  // Offset-based rather than a lookbehind — Hermes support for lookbehind
+  // varies by build, and adjacent quotes must all be removed.
+  return input.replace(/[‘’“”]/g, (quote: string, offset: number, whole: string) =>
+    quote === "’" && ASSAMESE_O_CARRIER.test(whole[offset - 1] ?? "") ? quote : ""
+  );
+}
+
 export function normalizePunctuation(input: string, lang: NarratorLanguageCode): string {
   return (
-    input
-      .replace(/[‘’“”]/g, "")
+    stripCurlyQuotes(input)
       .replace(/…|\.{3,}/g, ". ")
       // Whitespace-delimited only, so "e-mail" and "post-op" survive intact.
       .replace(/\s+[—–-]\s+/g, ", ")

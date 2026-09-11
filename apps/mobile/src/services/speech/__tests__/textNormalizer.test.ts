@@ -110,3 +110,19 @@ describe("joinForSpeech", () => {
     expect(joinForSpeech([], "en")).toBe("");
   });
 });
+
+describe("normalizePunctuation and the Assamese o-mark", () => {
+  it("keeps ’ after a consonant, where it is a vowel, and drops real quotes", () => {
+    // ক’ক’ is the app's name in Assamese; stripping the mark reads it as "kok".
+    expect(normalizeForSpeech("ক’ক’ই কয় “হয়”", { language: "as" })).toBe("ক’ক’ই কয় হয়");
+  });
+
+  it("still spells the app name with its o-marks from the Latin form", () => {
+    expect(normalizeForSpeech("Coco", { language: "as" })).toBe("ক’ক’");
+  });
+
+  it("removes every quote in a run, not every other one", () => {
+    expect(normalizeForSpeech("““x””", { language: "en" })).toBe("x");
+    expect(normalizeForSpeech("don’t ‘quote’ me", { language: "en" })).toBe("dont quote me");
+  });
+});
