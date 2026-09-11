@@ -59,9 +59,30 @@ export interface Translations {
     subtitle: string;
     languageTitle: string;
     languageHint: string;
-    assameseFallback: string;
     languageSet: string;
     signOutHint: string;
+    voiceSectionTitle: string;
+    voiceSectionHint: string;
+    narrationToggle: string;
+    narrationHint: string;
+    rateTitle: string;
+    rateSlow: string;
+    rateNormal: string;
+    rateFast: string;
+    testVoice: string;
+    testVoiceHint: string;
+    voiceSample: string;
+    voiceStatusOk: string;
+    voiceStatusEnhanced: string;
+    voiceStatusSubstitute: string;
+    voiceStatusMissing: string;
+    voiceStatusChecking: string;
+    checkAgain: string;
+    checkAgainHint: string;
+    installVoiceIos: string;
+    installVoiceAndroid: string;
+    screenReaderActive: string;
+    silentSwitchNote: string;
   };
   play: {
     instructions: string;
@@ -86,6 +107,9 @@ export interface Translations {
     empty: string;
     markDone: string;
     markNotDone: string;
+    atTime: string;
+    alreadyDone: string;
+    speakHint: string;
   };
   reminderTypes: Record<ReminderType, string>;
   myWorld: {
@@ -116,6 +140,9 @@ export interface Translations {
     people: string;
     notFound: string;
     savedOffline: string;
+    stopListening: string;
+    stopListeningHint: string;
+    voiceUnavailable: string;
   };
   progress: {
     instructions: string;

@@ -12,6 +12,11 @@ import { initializeDatabase } from "@/db/database";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { startAutoSync } from "@/services/autoSync";
 import "@/services/notifications";
+import {
+  configurePlaybackAudioSession,
+  initScreenReaderWatch,
+  installVoiceCatalogLifecycle,
+} from "@/services/speech";
 import { theme } from "@/theme";
 
 export default function App() {
@@ -28,6 +33,19 @@ export default function App() {
         console.error("Failed to initialize database", error);
         setDbReady(true);
       });
+  }, []);
+
+  // Narration needs three things ready before any screen speaks: a playback
+  // audio session, the screen-reader state, and the device's voice list.
+  useEffect(() => {
+    void configurePlaybackAudioSession();
+    const stopScreenReaderWatch = initScreenReaderWatch();
+    const stopVoiceCatalogWatch = installVoiceCatalogLifecycle();
+
+    return () => {
+      stopScreenReaderWatch();
+      stopVoiceCatalogWatch();
+    };
   }, []);
 
   // Only start syncing once the local tables exist — the outbox and the
