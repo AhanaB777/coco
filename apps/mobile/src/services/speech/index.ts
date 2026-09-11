@@ -39,5 +39,11 @@ export {
 } from "./scriptDetect";
 
 export { joinForSpeech, normalizeForSpeech } from "./textNormalizer";
+export {
+  bridgeAssameseForBengaliVoice,
+  bridgeForVoice,
+  needsAssameseToBengaliBridge,
+} from "./scriptBridge";
+export { buildLadder, type Attempt } from "./ladder";
 export { daypartForHour, numberToWords, timeToWords } from "./numberFormats";
 export { chunkForSpeech, getMaxChunkLength } from "./chunk";

@@ -527,7 +527,9 @@ def seed_my_world(db: Session) -> None:
             name="Priya",
             relationship="daughter",
             description="Lakshmi's daughter Priya",
-            photo_uri="/demo/priya.jpg",
+            photo_uri="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=400",
+            media_type=MediaType.PHOTO,
             success_rate=0.35,
             times_shown=5,
         ),
@@ -539,7 +541,9 @@ def seed_my_world(db: Session) -> None:
             name="Rohan",
             relationship="grandson",
             description="Lakshmi's grandson Rohan",
-            photo_uri="/demo/rohan.jpg",
+            photo_uri="https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=400",
+            media_type=MediaType.PHOTO,
             success_rate=0.80,
             times_shown=5,
         ),
@@ -551,7 +555,9 @@ def seed_my_world(db: Session) -> None:
             name="Our old house",
             relationship=None,
             description="The family home",
-            photo_uri="/demo/old-house.jpg",
+            photo_uri="https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400",
+            media_type=MediaType.PHOTO,
             success_rate=0.70,
             times_shown=5,
         ),
@@ -565,7 +571,9 @@ def seed_my_world(db: Session) -> None:
             name="Meena",
             relationship="daughter",
             description="Rajen's daughter Meena",
-            photo_uri="/demo/meena.jpg",
+            photo_uri="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
+            media_type=MediaType.PHOTO,
             success_rate=0.40,
             times_shown=4,
         ),
@@ -577,7 +585,9 @@ def seed_my_world(db: Session) -> None:
             name="Amit",
             relationship="son",
             description="Rajen's son Amit",
-            photo_uri="/demo/amit.jpg",
+            photo_uri="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            media_type=MediaType.PHOTO,
             success_rate=0.75,
             times_shown=4,
         ),
@@ -591,7 +601,9 @@ def seed_my_world(db: Session) -> None:
             name="Neha",
             relationship="daughter",
             description="Anjali's daughter Neha",
-            photo_uri="/demo/neha.jpg",
+            photo_uri="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400",
+            media_type=MediaType.PHOTO,
             success_rate=0.45,
             times_shown=3,
         ),
@@ -603,7 +615,9 @@ def seed_my_world(db: Session) -> None:
             name="Family garden",
             relationship=None,
             description="The garden near their family home",
-            photo_uri="/demo/family-garden.jpg",
+            photo_uri="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400",
+            media_type=MediaType.PHOTO,
             success_rate=0.75,
             times_shown=3,
         ),
@@ -626,8 +640,9 @@ def seed_my_world(db: Session) -> None:
                 "with the neighbours' children until the dhol players got "
                 "tired. You always made pitha for everyone who came."
             ),
-            photo_uri="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=1200",
-            thumbnail_uri="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=400",
+            # Wikimedia Commons (CC): a real Rongali Bihu group with dhol players.
+            photo_uri="https://commons.wikimedia.org/wiki/Special:FilePath/Bihu-Dance-assam.jpg?width=1200",
+            thumbnail_uri="https://commons.wikimedia.org/wiki/Special:FilePath/Bihu-Dance-assam.jpg?width=400",
             media_type=MediaType.PHOTO,
             memory_date=date(1998, 4, 14),
             people=["Priya", "Rohan"],
@@ -758,6 +773,105 @@ def seed_my_world(db: Session) -> None:
             tags=["recipe", "food"],
             sort_order=5,
         ),
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001107"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.PLACE,
+            name="The river by the village",
+            relationship=None,
+            description="Where the boats came in every evening",
+            story=(
+                "You washed the rice at the ghat while the fishermen tied up "
+                "their boats. Rohan learned to swim here, holding on to the "
+                "side of your uncle's boat."
+            ),
+            photo_uri="https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=400",
+            media_type=MediaType.PHOTO,
+            memory_date=date(1992, 10, 3),
+            people=["Rohan"],
+            tags=["river", "village", "boats"],
+            sort_order=6,
+            times_shown=2,
+            remembered_count=2,
+            success_rate=0.8,
+        ),
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001108"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.MOMENT,
+            name="Rohan playing in the grove",
+            relationship=None,
+            description="Video from last summer",
+            story=(
+                "The children played under the sal trees until it was too "
+                "dark to see the ball. You sat on the verandah and kept the "
+                "score, and nobody argued with your count."
+            ),
+            photo_uri="https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=400",
+            media_uri=(
+                "https://res.cloudinary.com/demo/video/upload/"
+                "samples/cld-sample-video.mp4"
+            ),
+            media_type=MediaType.VIDEO,
+            media_bytes=2_900_000,
+            memory_date=date(2024, 6, 15),
+            people=["Rohan"],
+            tags=["family", "play", "summer"],
+            sort_order=7,
+            times_shown=1,
+            remembered_count=1,
+        ),
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001109"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.PLACE,
+            name="Sunrise over the paddy fields",
+            relationship=None,
+            description="The fields behind the old house",
+            story=(
+                "The first thing you saw every morning. Your father planted "
+                "these fields, and you carried his tea out to him before "
+                "school."
+            ),
+            photo_uri="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400",
+            media_type=MediaType.PHOTO,
+            memory_date=date(1970, 11, 20),
+            people=[],
+            tags=["fields", "morning", "home"],
+            sort_order=8,
+            times_shown=3,
+            remembered_count=3,
+            success_rate=1.0,
+        ),
+
+        MyWorldItem(
+            id=uuid.UUID("00000000-0000-4000-8000-000000001110"),
+            patient_id=PATIENT_1_ID,
+            category=MyWorldCategory.MOMENT,
+            name="Sunday at the market",
+            relationship=None,
+            description="Priya's photo from the vegetable market",
+            story=(
+                "You always went to the same three stalls and haggled with "
+                "all of them, even though they gave you the right price "
+                "before you opened your mouth."
+            ),
+            photo_uri="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1200",
+            thumbnail_uri="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400",
+            media_type=MediaType.PHOTO,
+            memory_date=date(2023, 3, 12),
+            people=["Priya"],
+            tags=["market", "food"],
+            sort_order=9,
+            times_shown=1,
+            remembered_count=1,
+        ),
     ]
 
     existing_ids = {
@@ -771,7 +885,27 @@ def seed_my_world(db: Session) -> None:
 
     if new_items:
         db.add_all(new_items)
-        db.commit()
+
+    # Earlier seeds pointed the first entries at /demo/*.jpg, which nothing
+    # serves, so existing databases show blank tiles. Repair only those
+    # placeholders — a caregiver's own uploads are never overwritten.
+    seeded_by_id = {item.id: item for item in my_world_items}
+    for row in db.query(MyWorldItem).filter(MyWorldItem.id.in_(existing_ids)):
+        # Placeholders and the one stock photo that turned out to be the
+        # wrong subject (Tower Bridge standing in for Bihu).
+        replaceable = ("/demo/", "https://images.unsplash.com/photo-1533929736458")
+        if row.photo_uri and not row.photo_uri.startswith(replaceable):
+            continue
+        seeded = seeded_by_id[row.id]
+        if not seeded.photo_uri:
+            continue
+        row.photo_uri = seeded.photo_uri
+        row.thumbnail_uri = seeded.thumbnail_uri
+        row.media_uri = seeded.media_uri
+        row.media_type = seeded.media_type
+        row.media_bytes = seeded.media_bytes
+
+    db.commit()
 
 
 def main() -> None:

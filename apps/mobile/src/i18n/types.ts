@@ -89,15 +89,39 @@ export interface Translations {
     title: string;
     subtitle: string;
     gameHint: string;
+    offlineBanner: string;
+    pendingSync: string;
   };
   games: Record<GameType, string>;
-  gameStub: {
-    instructions: string;
-    subtitle: string;
-    title: string;
-    body: string;
-    back: string;
-    backHint: string;
+  gameUi: {
+    howToPlay: string;
+    start: string;
+    hint: string;
+    backToGamesHint: string;
+    level: string;
+    memoryInstructions: string;
+    namingInstructions: string;
+    patternInstructions: string;
+    settingUpCards: string;
+    choosingPictures: string;
+    gettingPatternReady: string;
+    whatIsThis: string;
+    roundComplete: string;
+    playAgain: string;
+    backToGames: string;
+    startingIn: string;
+    watchClosely: string;
+    yourTurn: string;
+    round: string;
+    nextLevel: string;
+  };
+  namingItems: Record<string, string>;
+  gameFeedback: {
+    gentleRetry: string[];
+    celebration: string[];
+    oneStar: string[];
+    twoStars: string[];
+    threeStars: string[];
   };
   reminders: {
     instructions: string;
@@ -157,6 +181,7 @@ export interface Translations {
     summaryPlayed: string;
     summaryPlayedPlural: string;
     summaryNone: string;
+    offlineBanner: string;
   };
   voice: {
     instructions: string;

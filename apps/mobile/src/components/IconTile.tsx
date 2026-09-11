@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { AppIcon, type AppIconName } from "@/components/AppIcon";
+import { StarRating } from "@/components/games/StarRating";
 import { iconMedallion, theme } from "@/theme";
 
 interface IconTileProps {
@@ -21,6 +22,9 @@ interface IconTileProps {
   accentColor?: string;
   backgroundColor?: string;
   iconWeight?: "duotone" | "regular" | "fill";
+  level?: number;
+  stars?: number;
+  gameLayout?: boolean;
 }
 
 export function IconTile({
@@ -33,6 +37,9 @@ export function IconTile({
   accentColor = theme.colors.primaryDark,
   backgroundColor = theme.colors.surfaceElevated,
   iconWeight = "duotone",
+  level,
+  stars,
+  gameLayout = false,
 }: IconTileProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -66,6 +73,7 @@ export function IconTile({
         accessibilityHint={accessibilityHint}
         style={({ pressed }) => [
           styles.tile,
+          gameLayout && styles.gameTile,
           {
             backgroundColor,
             borderColor: accentColor,
@@ -73,17 +81,30 @@ export function IconTile({
           pressed && styles.pressed,
         ]}
       >
-        <View style={iconMedallion(theme.colors.surfaceElevated)}>
+        <View
+          style={[
+            iconMedallion(theme.colors.surfaceElevated),
+            gameLayout && styles.largeIcon,
+          ]}
+        >
           <AppIcon
             name={iconName}
-            size={38}
+            size={gameLayout ? 52 : 38}
             color={accentColor}
             weight={iconWeight}
           />
         </View>
-        <Text style={styles.label} allowFontScaling>
-          {label}
-        </Text>
+        <View style={gameLayout ? styles.details : undefined}>
+          <Text style={styles.label} allowFontScaling numberOfLines={1}>
+            {label}
+          </Text>
+          {gameLayout && level !== undefined && stars !== undefined ? (
+            <>
+              <Text style={[styles.level, { color: accentColor }]}>Level {level}</Text>
+              <StarRating rating={stars} size={22} gap={3} />
+            </>
+          ) : null}
+        </View>
       </Pressable>
     </Animated.View>
   );
@@ -104,6 +125,10 @@ const styles = StyleSheet.create({
     borderWidth: theme.border.subtleWidth,
     ...theme.elevation.sm,
   },
+  gameTile: {
+    flexDirection: "row",
+    gap: theme.spacing.md,
+  },
   pressed: {
     opacity: 0.94,
     transform: [{ scale: 0.99 }],
@@ -113,5 +138,21 @@ const styles = StyleSheet.create({
     color: theme.colors.foreground,
     textAlign: "center",
     letterSpacing: 0.4,
+  },
+  largeIcon: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+  },
+  details: {
+    flex: 1,
+    alignSelf: "stretch",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    gap: theme.spacing.xs,
+  },
+  level: {
+    ...theme.typography.caption,
+    fontWeight: "700",
   },
 });

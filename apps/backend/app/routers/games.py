@@ -26,6 +26,7 @@ def _session_response(session: GameSession) -> GameSessionResponse:
         score=session.score,
         duration_seconds=session.duration_seconds,
         difficulty_level=session.difficulty_level,
+        hints_used=session.hints_used,
         played_at=session.played_at,
     )
 
@@ -65,6 +66,7 @@ def create_game_session(
         score=payload.score,
         duration_seconds=payload.duration_seconds,
         difficulty_level=difficulty,
+        hints_used=payload.hints_used,
         played_at=datetime.now(timezone.utc),
     )
     db.add(session)

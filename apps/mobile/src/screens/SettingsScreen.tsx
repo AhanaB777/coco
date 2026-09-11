@@ -79,6 +79,59 @@ export function SettingsScreen({ navigation }: Props) {
         onHomePress={() => navigation.navigate("Home")}
       />
 
+      {/* First on the page: the subtitle promises it, and every voice
+          option below depends on the language chosen here. */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle} allowFontScaling accessibilityRole="header">
+          {t("settings.languageTitle")}
+        </Text>
+        <Text style={styles.sectionHint} allowFontScaling>
+          {t("settings.languageHint")}
+        </Text>
+
+        <View style={styles.languageList}>
+          {NARRATOR_LANGUAGES.map((language) => {
+            const isSelected = selectedCode === language.code;
+
+            return (
+              <Pressable
+                key={language.code}
+                onPress={() => handleSelectLanguage(language)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${language.label}, ${language.nativeLabel}`}
+                style={({ pressed }) => [
+                  styles.languageRow,
+                  isSelected && styles.languageRowSelected,
+                  pressed && styles.languageRowPressed,
+                ]}
+              >
+                <View style={styles.languageText}>
+                  <Text style={styles.languageLabel} allowFontScaling>
+                    {language.label}
+                  </Text>
+                  <Text style={styles.languageNative} allowFontScaling>
+                    {language.nativeLabel}
+                  </Text>
+                  <VoiceStatusNote language={language} />
+                </View>
+
+                {isSelected ? (
+                  <AppIcon
+                    name="CheckCircle"
+                    size={32}
+                    color={theme.colors.tilePlay}
+                    weight="fill"
+                  />
+                ) : (
+                  <View style={styles.unselectedMarker} />
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle} allowFontScaling accessibilityRole="header">
           {t("settings.voiceSectionTitle")}
@@ -162,57 +215,6 @@ export function SettingsScreen({ navigation }: Props) {
             {t("settings.silentSwitchNote")}
           </Text>
         ) : null}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle} allowFontScaling accessibilityRole="header">
-          {t("settings.languageTitle")}
-        </Text>
-        <Text style={styles.sectionHint} allowFontScaling>
-          {t("settings.languageHint")}
-        </Text>
-
-        <View style={styles.languageList}>
-          {NARRATOR_LANGUAGES.map((language) => {
-            const isSelected = selectedCode === language.code;
-
-            return (
-              <Pressable
-                key={language.code}
-                onPress={() => handleSelectLanguage(language)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={`${language.label}, ${language.nativeLabel}`}
-                style={({ pressed }) => [
-                  styles.languageRow,
-                  isSelected && styles.languageRowSelected,
-                  pressed && styles.languageRowPressed,
-                ]}
-              >
-                <View style={styles.languageText}>
-                  <Text style={styles.languageLabel} allowFontScaling>
-                    {language.label}
-                  </Text>
-                  <Text style={styles.languageNative} allowFontScaling>
-                    {language.nativeLabel}
-                  </Text>
-                  <VoiceStatusNote language={language} />
-                </View>
-
-                {isSelected ? (
-                  <AppIcon
-                    name="CheckCircle"
-                    size={32}
-                    color={theme.colors.tilePlay}
-                    weight="fill"
-                  />
-                ) : (
-                  <View style={styles.unselectedMarker} />
-                )}
-              </Pressable>
-            );
-          })}
-        </View>
       </View>
 
       <BigButton

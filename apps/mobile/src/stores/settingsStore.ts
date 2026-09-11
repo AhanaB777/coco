@@ -55,8 +55,10 @@ export const useSettingsStore = create<SettingsState>()(
         autoNarrateScreens: state.autoNarrateScreens,
         speechRate: state.speechRate,
       }),
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+      // Flip the flag even when storage fails to read: the app gates on it
+      // and must never be stuck on the splash spinner.
+      onRehydrateStorage: () => () => {
+        useSettingsStore.setState({ hasHydrated: true });
       },
     }
   )

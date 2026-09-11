@@ -1,5 +1,7 @@
 import { getDatabase } from "@/db/database";
+import { upsertServerSessions } from "@/db/gameRepo";
 import { setLocalMediaPath, upsertItems } from "@/db/myWorldRepo";
+import { fetchSyncPull } from "@/services/games";
 import { ensureCached, evictBeyond } from "@/services/mediaCache";
 import { fetchMyWorld } from "@/services/myWorldApi";
 import { flush } from "@/services/syncQueue";
@@ -11,26 +13,34 @@ import type { MyWorldItem } from "@/types/api";
  * next loses connectivity.
  */
 
-function lastPulledKey(patientId: string): string {
+function myWorldPulledKey(patientId: string): string {
   return `my_world_pulled_at:${patientId}`;
 }
 
-export async function lastPulledAt(patientId: string): Promise<string | null> {
+function gamesPulledKey(patientId: string): string {
+  return `games_pulled_at:${patientId}`;
+}
+
+async function readMeta(key: string): Promise<string | null> {
   const db = await getDatabase();
   const row = await db.getFirstAsync<{ value: string }>(
     "SELECT value FROM sync_meta WHERE key = ?",
-    [lastPulledKey(patientId)]
+    [key]
   );
   return row?.value ?? null;
 }
 
-async function markPulled(patientId: string, at: string): Promise<void> {
+async function writeMeta(key: string, value: string): Promise<void> {
   const db = await getDatabase();
   await db.runAsync(
     `INSERT INTO sync_meta (key, value) VALUES (?, ?)
        ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
-    [lastPulledKey(patientId), at]
+    [key, value]
   );
+}
+
+export function lastPulledAt(patientId: string): Promise<string | null> {
+  return readMeta(myWorldPulledKey(patientId));
 }
 
 /**
@@ -100,7 +110,7 @@ export function pullAll(patientId: string): Promise<boolean> {
         patientId,
         items.map((item) => item.id)
       );
-      await markPulled(patientId, new Date().toISOString());
+      await writeMeta(myWorldPulledKey(patientId), new Date().toISOString());
 
       // Media download is the slow part; it must not hold up the UI, which
       // already has the metadata it needs to render.
@@ -117,8 +127,41 @@ export function pullAll(patientId: string): Promise<boolean> {
   return pullInFlight;
 }
 
+let gamesPullInFlight: Promise<boolean> | null = null;
+
+/**
+ * Pulls game sessions the server has seen since the last pull — sessions
+ * from before a reinstall, or from another device.
+ *
+ * The watermark is the server's own clock (`server_time`), so a device with
+ * a wrong clock still asks for exactly the right window. Sessions are
+ * append-only, so a delta is enough here.
+ */
+export function pullGameSessions(patientId: string): Promise<boolean> {
+  if (gamesPullInFlight) return gamesPullInFlight;
+
+  gamesPullInFlight = (async () => {
+    try {
+      const since = await readMeta(gamesPulledKey(patientId));
+      const data = await fetchSyncPull(patientId, since);
+
+      await upsertServerSessions(data.game_sessions);
+      await writeMeta(gamesPulledKey(patientId), data.server_time);
+
+      return true;
+    } catch {
+      return false;
+    } finally {
+      gamesPullInFlight = null;
+    }
+  })();
+
+  return gamesPullInFlight;
+}
+
 /** Push queued writes, then pull server changes. Safe to call on every wake-up. */
 export async function syncNow(patientId: string): Promise<void> {
   await flush();
   await pullAll(patientId);
+  await pullGameSessions(patientId);
 }

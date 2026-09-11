@@ -1,49 +1,81 @@
+import logging
 from datetime import datetime, timezone
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.core.deps import AuthContext, get_patient_for_auth, require_roles
 from app.core.security import AuthRole
 from app.database import get_db
-from app.models import GameSession, MyWorldItem, Reminder, SyncOperation
-from app.models.enums import GameType
-from app.schemas.sync import SyncOperationResult, SyncPullResponse, SyncRequest, SyncResponse
+from app.models import GameSession, MyWorldItem, Patient, Reminder, SyncOperation
+from app.schemas.sync import (
+    GameResultPayload,
+    SyncOperationResult,
+    SyncPullResponse,
+    SyncRequest,
+    SyncResponse,
+)
+from app.services.adaptive import get_next_difficulty
+from app.services.alert_engine import evaluate_patient
 from app.services.my_world import apply_reaction
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sync", tags=["sync"])
 
 
-def _apply_game_result(db: Session, patient_id: UUID, payload: dict, client_timestamp):
+def _apply_game_result(db: Session, patient: Patient, payload: dict, client_timestamp):
+    """Mirrors POST /games/sessions for a result recorded offline.
+
+    The device chooses the session id so a pull can merge the server copy
+    back over the local row, and so a replayed operation whose audit row was
+    lost still lands exactly once.
+    """
     try:
-        game_type = GameType(payload["game_type"])
-        score = payload.get("score")
-        duration_seconds = payload.get("duration_seconds")
-        difficulty_level = payload.get("difficulty_level") or 1
-        if score is not None and (not isinstance(score, int) or score < 0):
-            raise ValueError("score must be a non-negative integer")
-        if duration_seconds is not None and (not isinstance(duration_seconds, int) or duration_seconds < 0):
-            raise ValueError("duration_seconds must be a non-negative integer")
-        if not 1 <= int(difficulty_level) <= 5:
-            raise ValueError("difficulty_level must be between 1 and 5")
-    except (KeyError, ValueError) as exc:
-        raise ValueError(f"Invalid game_result payload: {exc}") from exc
+        data = GameResultPayload.model_validate(payload)
+    except ValidationError as exc:
+        raise ValueError(f"Invalid game_result payload: {exc.errors()[0]['msg']}") from exc
+
+    if data.session_id is not None:
+        existing = db.get(GameSession, data.session_id)
+        if existing is not None:
+            if existing.patient_id != patient.id:
+                raise ValueError("session_id already belongs to another patient")
+            return existing.id
+
+    difficulty = data.difficulty_level or get_next_difficulty(
+        db, patient.id, patient.cognitive_level
+    )
 
     session = GameSession(
-        patient_id=patient_id,
-        game_type=game_type,
-        score=score,
-        duration_seconds=duration_seconds,
-        difficulty_level=int(difficulty_level),
+        id=data.session_id or uuid4(),
+        patient_id=patient.id,
+        game_type=data.game_type,
+        score=data.score,
+        duration_seconds=data.duration_seconds,
+        difficulty_level=difficulty,
+        hints_used=data.hints_used,
         played_at=client_timestamp or datetime.now(timezone.utc),
     )
     db.add(session)
-    db.flush()
-    return session.id
+    # Persist before alerting, as POST /games/sessions does: a hiccup in the
+    # alert engine must not lose the session, because the retry would be
+    # answered "duplicate" and the result dropped.
+    db.commit()
+    session_id = session.id
+
+    try:
+        evaluate_patient(db, patient)
+    except Exception:  # noqa: BLE001 - alerting is best-effort here
+        logger.exception("Alert evaluation failed after synced game result")
+        db.rollback()
+
+    return session_id
 
 
-def _apply_reminder_update(db: Session, patient_id: UUID, payload: dict, client_timestamp=None):
+def _apply_reminder_update(db: Session, patient: Patient, payload: dict, client_timestamp=None):
     try:
         reminder_id = UUID(str(payload["reminder_id"]))
     except (KeyError, ValueError) as exc:
@@ -51,7 +83,7 @@ def _apply_reminder_update(db: Session, patient_id: UUID, payload: dict, client_
 
     reminder = (
         db.query(Reminder)
-        .filter(Reminder.id == reminder_id, Reminder.patient_id == patient_id)
+        .filter(Reminder.id == reminder_id, Reminder.patient_id == patient.id)
         .first()
     )
     if reminder is None:
@@ -79,7 +111,7 @@ def _apply_reminder_update(db: Session, patient_id: UUID, payload: dict, client_
     return reminder.id
 
 
-def _apply_my_world_reaction(db: Session, patient_id: UUID, payload: dict, client_timestamp=None):
+def _apply_my_world_reaction(db: Session, patient: Patient, payload: dict, client_timestamp=None):
     try:
         item_id = UUID(str(payload["item_id"]))
     except (KeyError, ValueError) as exc:
@@ -91,7 +123,7 @@ def _apply_my_world_reaction(db: Session, patient_id: UUID, payload: dict, clien
 
     item = (
         db.query(MyWorldItem)
-        .filter(MyWorldItem.id == item_id, MyWorldItem.patient_id == patient_id)
+        .filter(MyWorldItem.id == item_id, MyWorldItem.patient_id == patient.id)
         .first()
     )
     if item is None:
@@ -119,7 +151,18 @@ def sync_operations(
     synced = duplicates = failed = 0
 
     for operation in payload.operations:
-        get_patient_for_auth(operation.patient_id, auth, db)
+        # One bad operation must not abort the batch: earlier operations have
+        # already been committed and the client needs their results.
+        try:
+            patient = get_patient_for_auth(operation.patient_id, auth, db)
+        except HTTPException as exc:
+            failed += 1
+            results.append(SyncOperationResult(
+                operation_id=operation.operation_id,
+                status="failed",
+                error=str(exc.detail),
+            ))
+            continue
 
         existing = (
             db.query(SyncOperation)
@@ -134,7 +177,7 @@ def sync_operations(
             results.append(SyncOperationResult(
                 operation_id=operation.operation_id,
                 status="duplicate",
-                resource_id=existing.id.__str__(),
+                resource_id=existing.resource_id,
             ))
             continue
 
@@ -157,11 +200,12 @@ def sync_operations(
             handler = _HANDLERS[operation.operation_type]
             resource_id = handler(
                 db,
-                operation.patient_id,
+                patient,
                 operation.payload,
                 operation.client_timestamp,
             )
             record.status = "synced"
+            record.resource_id = str(resource_id)
             record.processed_at = datetime.now(timezone.utc)
             db.commit()
             synced += 1
@@ -227,8 +271,8 @@ def pull_changes(
             "id": str(s.id), "patient_id": str(s.patient_id),
             "game_type": s.game_type.value, "score": s.score,
             "duration_seconds": s.duration_seconds,
-            "difficulty_level": s.difficulty_level, "played_at": s.played_at,
-            "created_at": s.created_at,
+            "difficulty_level": s.difficulty_level, "hints_used": s.hints_used,
+            "played_at": s.played_at, "created_at": s.created_at,
         } for s in sessions],
         my_world_items=[{
             "id": str(i.id), "patient_id": str(i.patient_id),

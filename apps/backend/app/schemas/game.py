@@ -9,9 +9,10 @@ from app.models.enums import GameType
 class GameSessionCreate(BaseModel):
     patient_id: str
     game_type: GameType
-    score: Optional[int] = Field(default=None, ge=0)
+    score: Optional[int] = Field(default=None, ge=0, le=100)
     duration_seconds: Optional[int] = Field(default=None, ge=0)
     difficulty_level: Optional[int] = Field(default=None, ge=1, le=5)
+    hints_used: Optional[int] = Field(default=None, ge=0)
 
 
 class GameSessionResponse(BaseModel):
@@ -23,6 +24,7 @@ class GameSessionResponse(BaseModel):
     score: Optional[int] = None
     duration_seconds: Optional[int] = None
     difficulty_level: int
+    hints_used: Optional[int] = None
     played_at: datetime
 
 
