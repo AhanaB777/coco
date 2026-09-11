@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Modal, Text, StyleSheet, View } from 'react-native';
+import { Animated, Text, StyleSheet, View } from 'react-native';
 import { theme } from '@/theme';
 
 interface EncouragementBannerProps {
@@ -66,12 +66,14 @@ export function EncouragementBanner({
 
   if (!overlay) return content;
 
+  // Not a Modal on purpose. iOS presents one modal at a time: when a game ends
+  // right after a mistake, the results Modal was mounting while this one was
+  // still up, so iOS dropped it and the game looked frozen. A Modal also
+  // swallowed every tap (the back button included) for the whole 2 seconds.
   return (
-    <Modal visible transparent animationType="none" onRequestClose={onHide}>
-      <View style={styles.overlay} pointerEvents="box-none">
-        {content}
-      </View>
-    </Modal>
+    <View style={styles.overlay} pointerEvents="none">
+      {content}
+    </View>
   );
 }
 
@@ -88,12 +90,15 @@ const styles = StyleSheet.create({
     ...theme.elevation.md,
   },
   overlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    backgroundColor: 'rgba(30, 45, 36, 0.22)',
     padding: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
+    zIndex: 10,
+    elevation: 10,
   },
   overlayBanner: {
     width: '100%',
