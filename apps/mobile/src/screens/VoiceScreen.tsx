@@ -267,35 +267,37 @@ export function VoiceScreen({ navigation, route }: Props) {
           {getVoiceStateLabel(state, t)}
         </Text>
 
-        <Pressable
-          onPress={handleMicPress}
-          disabled={micDisabled}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: micDisabled }}
-          accessibilityLabel={
-            state === "listening"
-              ? t("voice.stopListening")
-              : t("voice.startListening")
-          }
-          accessibilityHint={t("voice.micHint")}
-          style={({ pressed }) => [
-            styles.micButton,
-            state === "listening" && styles.micListening,
-            state === "speaking" && styles.micSpeaking,
-            state === "thinking" && styles.micThinking,
-            micDisabled && styles.micDisabled,
-            pressed && !micDisabled && styles.pressed,
-          ]}
-        >
-          <AppIcon
-            name={state === "listening" ? "StopCircle" : "Microphone"}
-            size={72}
-            color={micColor}
-            weight="fill"
-          />
-        </Pressable>
-
+        {/* Mic, text and send share one row so the conversation above gets the
+            screen: with the old stacked layout only two bubbles were visible. */}
         <View style={styles.textRow}>
+          <Pressable
+            onPress={handleMicPress}
+            disabled={micDisabled}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: micDisabled }}
+            accessibilityLabel={
+              state === "listening"
+                ? t("voice.stopListening")
+                : t("voice.startListening")
+            }
+            accessibilityHint={t("voice.micHint")}
+            style={({ pressed }) => [
+              styles.micButton,
+              state === "listening" && styles.micListening,
+              state === "speaking" && styles.micSpeaking,
+              state === "thinking" && styles.micThinking,
+              micDisabled && styles.micDisabled,
+              pressed && !micDisabled && styles.pressed,
+            ]}
+          >
+            <AppIcon
+              name={state === "listening" ? "StopCircle" : "Microphone"}
+              size={40}
+              color={micColor}
+              weight="fill"
+            />
+          </Pressable>
+
           <TextInput
             value={textInput}
             onChangeText={setTextInput}
@@ -320,7 +322,7 @@ export function VoiceScreen({ navigation, route }: Props) {
           >
             <AppIcon
               name="PaperPlaneRight"
-              size={28}
+              size={26}
               color={theme.colors.onPrimary}
               weight="fill"
             />
@@ -338,7 +340,7 @@ export function VoiceScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   chatArea: {
     flex: 1,
-    minHeight: 120,
+    minHeight: 200,
   },
   loadingWrap: {
     flex: 1,
@@ -370,22 +372,22 @@ const styles = StyleSheet.create({
   },
   controls: {
     alignItems: "center",
-    gap: theme.spacing.sm,
-    paddingTop: theme.spacing.sm,
-    paddingBottom: theme.spacing.md,
+    gap: theme.spacing.xs,
+    paddingTop: theme.spacing.xs,
+    paddingBottom: theme.spacing.xs,
     borderTopWidth: theme.border.width,
     borderTopColor: theme.colors.borderSubtle,
   },
   status: {
-    ...theme.typography.title,
-    fontSize: 22,
-    color: theme.colors.foreground,
+    ...theme.typography.caption,
+    fontSize: 16,
+    color: theme.colors.muted,
     textAlign: "center",
   },
   micButton: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     borderWidth: theme.border.width * 2,
     borderColor: theme.colors.goldBorder,
     backgroundColor: theme.colors.tileVoiceBg,
@@ -419,7 +421,10 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    minHeight: 56,
+    // Without this the input keeps its intrinsic width and pushes the send
+    // button off-screen on narrow phones.
+    minWidth: 0,
+    minHeight: 60,
     borderWidth: theme.border.width,
     borderColor: theme.colors.border,
     borderRadius: theme.border.radius,
@@ -440,8 +445,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   hint: {
-    ...theme.typography.body,
-    fontSize: 18,
+    ...theme.typography.caption,
+    fontSize: 15,
     color: theme.colors.muted,
     textAlign: "center",
     paddingHorizontal: theme.spacing.md,
