@@ -235,10 +235,14 @@ export function VoiceScreen({ navigation, route }: Props) {
           void processVoiceRecordingRef.current();
         }, MAX_RECORDING_MS);
       } catch (error) {
+        console.error("Voice recording could not start", error);
+        const detail = error instanceof Error ? error.message : String(error);
         const message =
-          error instanceof Error && error.message === "MIC_PERMISSION_DENIED"
+          detail === "MIC_PERMISSION_DENIED"
             ? t("voice.noMicPermission")
-            : t("voice.error");
+            : __DEV__
+              ? `${t("voice.error")}\n\n${detail}`
+              : t("voice.error");
         Alert.alert(t("voice.title"), message);
       }
       return;

@@ -167,8 +167,6 @@ def seed_database(db: Session) -> None:
         ),
     ]
 
-    db.add_all(yoga_videos)
-
     # Insert Yoga videos only once.
     existing_yoga_uris = {uri[0] for uri in db.query(YogaVideo.video_uri).all()}
     new_yoga_videos = [v for v in yoga_videos if v.video_uri not in existing_yoga_uris]
