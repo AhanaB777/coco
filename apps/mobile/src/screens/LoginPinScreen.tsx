@@ -110,6 +110,7 @@ export function LoginPinScreen({ navigation }: Props) {
         patientId: patient.id,
         patientName: patient.full_name,
         loginUsername: trimmed,
+        role: me.role === "caregiver" ? "caregiver" : "patient",
         preferredLanguage: patient.preferred_language,
       });
 

@@ -22,6 +22,7 @@ import {
   Sun,
   SunHorizon,
   type IconProps,
+  UsersThree,
 } from "phosphor-react-native";
 import { View } from "react-native";
 
@@ -46,7 +47,8 @@ export type AppIconName =
   | "Play"
   | "SpeakerHigh"
   | "FileText"
-  | "CloudSlash";
+  | "CloudSlash"
+  | "UsersThree";
 
 type AppIconWeight = "duotone" | "regular" | "fill";
 
@@ -79,6 +81,7 @@ const ICON_MAP: Record<AppIconName, ComponentType<IconProps>> = {
   SpeakerHigh,
   FileText,
   CloudSlash,
+  UsersThree,
 };
 
 export function AppIcon({

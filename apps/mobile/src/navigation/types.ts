@@ -10,6 +10,7 @@ export type RootStackParamList = {
   Progress: undefined;
   Voice: { seedPrompt?: string } | undefined;
   MyWorld: undefined;
+  Community: undefined;
   MemoryDetail: { itemId: string };
   Settings: undefined;
 };

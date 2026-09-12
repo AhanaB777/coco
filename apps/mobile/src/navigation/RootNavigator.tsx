@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import type { RootStackParamList } from "@/navigation/types";
 import { GameStubScreen } from "@/screens/GameStubScreen";
+import { CommunityScreen } from "@/screens/CommunityScreen";
 import { HomeScreen } from "@/screens/HomeScreen";
 import { LoginPinScreen } from "@/screens/LoginPinScreen";
 import { MemoryDetailScreen } from "@/screens/MemoryDetailScreen";
@@ -34,6 +35,7 @@ export function RootNavigator() {
       <Stack.Screen name="Progress" component={ProgressScreen} />
       <Stack.Screen name="Voice" component={VoiceScreen} />
       <Stack.Screen name="MyWorld" component={MyWorldScreen} />
+      <Stack.Screen name="Community" component={CommunityScreen} />
       <Stack.Screen name="MemoryDetail" component={MemoryDetailScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
