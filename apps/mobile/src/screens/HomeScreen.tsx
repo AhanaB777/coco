@@ -77,12 +77,12 @@ export function HomeScreen({ navigation }: Props) {
             accessibilityHint={t("home.myWorldHint")}
           />
           <IconTile
-            label="Community"
+            label={t("home.community")}
             iconName="UsersThree"
             accentColor={theme.colors.tileProgress}
             backgroundColor={theme.colors.tileProgressBg}
             onPress={() => navigation.navigate("Community")}
-            accessibilityHint="Open Community"
+            accessibilityHint={t("home.communityHint")}
           />
         </View>
       </View>

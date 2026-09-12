@@ -43,6 +43,8 @@ export interface Translations {
     progress: string;
     voice: string;
     myWorld: string;
+    community: string;
+    communityHint: string;
     playHint: string;
     remindersHint: string;
     progressHint: string;
@@ -212,5 +214,28 @@ export interface Translations {
   };
   screenHeader: {
     homeHint: string;
+  };
+  community: {
+    title: string;
+    subtitle: string;
+    subtitleWithName: string;
+    communitySections: string;
+    sections: {
+      updates: string;
+      activities: string;
+      people: string;
+    };
+    categories: {
+      family: string;
+      community: string;
+      healthcare: string;
+      emergency: string;
+    };
+    expandDetails: string;
+    collapseDetails: string;
+    viewDetails: string;
+    showLess: string;
+    demoCall: string;
+    demoCallHint: string;
   };
 }
