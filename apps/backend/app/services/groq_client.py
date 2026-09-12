@@ -44,7 +44,14 @@ WHISPER_LANGUAGE_CODES: dict[str, str] = {
 
 # Mean segment log-probability below this means Whisper was guessing.
 LOW_CONFIDENCE_LOGPROB = -1.0
-# Mean segment no-speech probability above this means the clip was silence.
+# Above this the auto pass is worth a second opinion from the forced pass:
+# Whisper's language guess on Assamese speech is often "English" at exactly
+# this kind of middling score.
+DOUBTFUL_LOGPROB = -0.5
+# Mean segment no-speech probability above this suggests the clip was silence.
+# Only a suggestion: a patient who taps and then pauses before speaking scores
+# 0.7-0.8 here with perfectly good words behind the pause, so it counts as
+# silence only when the decoder was also guessing (Whisper's own rule).
 NO_SPEECH_THRESHOLD = 0.6
 
 # Whisper's stock output on silence. Matched case-insensitively against the
@@ -86,12 +93,33 @@ class Transcription:
         return self.confidence is not None and self.confidence < LOW_CONFIDENCE_LOGPROB
 
     @property
-    def is_silence(self) -> bool:
+    def is_probably_silent(self) -> bool:
         return self.no_speech_prob is not None and self.no_speech_prob > NO_SPEECH_THRESHOLD
+
+    @property
+    def is_silence(self) -> bool:
+        return self.is_probably_silent and (self.confidence is None or self.is_low_confidence)
+
+    @property
+    def is_doubtful(self) -> bool:
+        """Usable, but shaky enough that the forced pass may do better."""
+        return self.is_probably_silent or (
+            self.confidence is not None and self.confidence < DOUBTFUL_LOGPROB
+        )
 
     @property
     def is_usable(self) -> bool:
         return not (self.is_empty or self.is_silence or _is_hallucination(self.text))
+
+    @property
+    def rejection_reason(self) -> Optional[str]:
+        if self.is_empty:
+            return "empty"
+        if self.is_silence:
+            return "silence"
+        if _is_hallucination(self.text):
+            return "hallucination"
+        return None
 
 
 def _get_client() -> Groq:
@@ -263,9 +291,7 @@ def transcribe_audio(
         auto.language, auto.confidence, auto.no_speech_prob,
     )
 
-    needs_fallback = (
-        not auto.is_usable or auto.is_low_confidence or auto.language is None
-    )
+    needs_fallback = not auto.is_usable or auto.is_doubtful or auto.language is None
     if hint and needs_fallback:
         forced = _transcribe_once(client, file_bytes, filename, language=hint)
         logger.info(
@@ -277,6 +303,7 @@ def transcribe_audio(
             or auto.language is None
             or (forced.confidence or 0.0) > (auto.confidence or 0.0)
         ):
+            logger.info("Whisper: using forced pass")
             # The hint fixes the script, not the language: report the app
             # language the caller asked for rather than Whisper's echo of it.
             return Transcription(
@@ -287,6 +314,7 @@ def transcribe_audio(
             )
 
     if not auto.is_usable:
+        logger.info("Whisper: no usable transcript (%s)", auto.rejection_reason)
         return Transcription(
             text="",
             language=auto.language,

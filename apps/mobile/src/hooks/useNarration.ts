@@ -5,6 +5,7 @@ import {
   speak,
   stopSpeaking,
   subscribeSpeaking,
+  waitForSpeechRelease,
   type SpeakOptions,
   type SpeakOutcome,
 } from "@/services/speech";
@@ -12,6 +13,11 @@ import {
 export interface Narration {
   speak: (text: string, options?: SpeakOptions) => Promise<SpeakOutcome>;
   stop: () => void;
+  /**
+   * Stops narration and waits for the synthesizer to release the audio
+   * session, for callers that open the microphone next.
+   */
+  stopAsync: () => Promise<void>;
   isSpeaking: boolean;
   /** False when the device has no usable voice for the last thing we tried to say. */
   isAvailable: boolean;
@@ -29,9 +35,15 @@ export function useNarration(): Narration {
     void stopSpeaking();
   }, []);
 
+  const stopAsync = useCallback(async () => {
+    await stopSpeaking();
+    await waitForSpeechRelease();
+  }, []);
+
   return {
     speak,
     stop,
+    stopAsync,
     isSpeaking: state.isSpeaking,
     isAvailable: !state.unavailable,
   };

@@ -87,6 +87,61 @@ def test_silence_returns_empty_transcript():
     assert len(_calls(client)) == 2
 
 
+def test_pause_before_speaking_is_not_silence():
+    """Seen in production: no_speech 0.70 with a confident forced transcript.
+
+    The patient taps, pauses, then speaks. Whisper flags the quiet opening as
+    probable no-speech yet decodes the words behind it with confidence, and
+    its own decoder keeps such segments. Rejecting them cost real utterances.
+    """
+    client = _client_returning(
+        _verbose("Hello", language="english", logprob=-0.71, no_speech=0.70),
+        _verbose("মই ভালে আছোঁ", language="bengali", logprob=-0.26, no_speech=0.70),
+    )
+    with patch.object(groq_client, "_get_client", return_value=client):
+        result = groq_client.transcribe_audio(b"...", "a.m4a", language_hint="as")
+
+    assert result.text == "মই ভালে আছোঁ"
+    assert result.language == "as"
+
+
+def test_high_no_speech_with_guessed_words_is_silence():
+    client = _client_returning(
+        _verbose("uh", language="english", logprob=-1.4, no_speech=0.8),
+        _verbose("uh", language="bengali", logprob=-1.25, no_speech=0.8),
+    )
+    with patch.object(groq_client, "_get_client", return_value=client):
+        result = groq_client.transcribe_audio(b"...", "a.m4a", language_hint="as")
+
+    assert result.is_empty
+
+
+def test_doubtful_auto_pass_gets_a_second_opinion():
+    """A middling "English" guess on Assamese speech triggers the forced pass,
+    and the more confident of the two wins."""
+    client = _client_returning(
+        _verbose("Moi bhal asu", language="english", logprob=-0.69, no_speech=0.1),
+        _verbose("মই ভাল আছোঁ", language="bengali", logprob=-0.2, no_speech=0.1),
+    )
+    with patch.object(groq_client, "_get_client", return_value=client):
+        result = groq_client.transcribe_audio(b"...", "a.m4a", language_hint="as")
+
+    assert len(_calls(client)) == 2
+    assert result.text == "মই ভাল আছোঁ"
+
+
+def test_doubtful_auto_pass_is_kept_when_forced_is_worse():
+    client = _client_returning(
+        _verbose("Where is my home", language="english", logprob=-0.69, no_speech=0.1),
+        _verbose("garbled", language="bengali", logprob=-1.6, no_speech=0.1),
+    )
+    with patch.object(groq_client, "_get_client", return_value=client):
+        result = groq_client.transcribe_audio(b"...", "a.m4a", language_hint="as")
+
+    assert result.text == "Where is my home"
+    assert result.language == "en"
+
+
 def test_hallucination_phrase_alone_is_rejected():
     client = _client_returning(
         _verbose("Thank you for watching!", language="english"),

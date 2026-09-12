@@ -46,7 +46,7 @@ export function VoiceScreen({ navigation, route }: Props) {
   const autoStopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { t } = useTranslation();
   const language = getPreferredNarratorLanguage();
-  const { speak, stop } = useNarration();
+  const { speak, stopAsync } = useNarration();
 
   useSpeakOnMount(t("voice.instructions"));
 
@@ -115,6 +115,15 @@ export function VoiceScreen({ navigation, route }: Props) {
     [scrollToEnd]
   );
 
+  /**
+   * Return to idle, unless the patient has already interrupted and started
+   * talking — `speak` resolves as soon as it is stopped, so without this the
+   * reply would drop the microphone it just opened back to idle.
+   */
+  const finishSpeaking = useCallback(() => {
+    setState((current) => (current === "speaking" ? "idle" : current));
+  }, []);
+
   const handleAssistantReply = useCallback(
     async (assistantMessage: ChatMessage) => {
       setState("speaking");
@@ -125,9 +134,9 @@ export function VoiceScreen({ navigation, route }: Props) {
         priority: "user",
         userGenerated: true,
       });
-      setState("idle");
+      finishSpeaking();
     },
-    [language, speak]
+    [finishSpeaking, language, speak]
   );
 
   const clearAutoStop = useCallback(() => {
@@ -148,9 +157,9 @@ export function VoiceScreen({ navigation, route }: Props) {
     async (key: "voice.tooShort" | "voice.notUnderstood") => {
       setState("speaking");
       await speak(t(key), { languageCode: language, priority: "user" });
-      setState("idle");
+      finishSpeaking();
     },
-    [language, speak, t]
+    [finishSpeaking, language, speak, t]
   );
 
   const handleError = useCallback(async () => {
@@ -168,9 +177,9 @@ export function VoiceScreen({ navigation, route }: Props) {
     ]);
     setState("speaking");
     await speak(errorText, { languageCode: language, priority: "user" });
-    setState("idle");
+    finishSpeaking();
     scrollToEnd();
-  }, [language, scrollToEnd, speak, t]);
+  }, [finishSpeaking, language, scrollToEnd, speak, t]);
 
   const processVoiceRecording = useCallback(async () => {
     clearAutoStop();
@@ -190,6 +199,12 @@ export function VoiceScreen({ navigation, route }: Props) {
     // never leaves the phone.
     if (recording.durationMillis > 0 && recording.durationMillis < MIN_RECORDING_MS) {
       await promptRetry("voice.tooShort");
+      return;
+    }
+    if (recording.interrupted) {
+      // Uploading it would only buy a slower "not understood" from Whisper.
+      console.warn("The recorder stopped before the patient did; skipping upload");
+      await promptRetry("voice.notUnderstood");
       return;
     }
 
@@ -219,14 +234,18 @@ export function VoiceScreen({ navigation, route }: Props) {
   processVoiceRecordingRef.current = processVoiceRecording;
 
   const handleMicPress = async () => {
-    if (state === "thinking" || state === "speaking") {
+    // Only a request in flight blocks the microphone. A reply runs for several
+    // sentences, and a patient who taps during it is asking to be heard now —
+    // refusing until Coco finishes reads as the app ignoring them.
+    if (state === "thinking") {
       return;
     }
 
-    if (state === "idle") {
+    if (state === "idle" || state === "speaking") {
       try {
-        // Stop narrating first, or Coco talks into its own open microphone.
-        stop();
+        // Wait for narration to actually stop, or Coco talks into its own open
+        // microphone and the audio session flips mid-sentence.
+        await stopAsync();
         await startRecording();
         setState("listening");
         // A forgotten open mic would otherwise upload an unbounded file.
@@ -255,10 +274,13 @@ export function VoiceScreen({ navigation, route }: Props) {
 
   const handleSendText = async () => {
     const trimmed = textInput.trim();
-    if (!trimmed || state === "thinking" || state === "speaking") {
+    if (!trimmed || state === "thinking") {
       return;
     }
 
+    // Sending while Coco is still reading its last answer interrupts it, the
+    // same way pressing the microphone does.
+    await stopAsync();
     setTextInput("");
     setState("thinking");
 
@@ -280,7 +302,8 @@ export function VoiceScreen({ navigation, route }: Props) {
           ? theme.colors.gold
           : theme.colors.tileVoice;
 
-  const micDisabled = state === "thinking" || state === "speaking";
+  // Narration is interruptible, so only a request in flight disables the row.
+  const micDisabled = state === "thinking";
 
   return (
     <ScreenLayout>

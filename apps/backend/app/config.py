@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-to-a-random-secret-in-production"
     BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://localhost:8081"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    # Python's default (WARNING) hides the Whisper pass diagnostics, which are
+    # the only way to tell a silent clip from a rejected one.
+    LOG_LEVEL: str = "INFO"
 
     CLOUDINARY_CLOUD_NAME: str = ""
     CLOUDINARY_API_KEY: str = ""
