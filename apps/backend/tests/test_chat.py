@@ -79,7 +79,7 @@ def test_chat_context_builds(client, db_session):
     context = build_patient_context(db_session, patient)
 
     assert "Lakshmi Devi" in context
-    assert "Preferred language" in context
+    assert "App interface language" in context
     assert "reminders" in context.lower()
 
 
@@ -150,7 +150,9 @@ def test_chat_message_with_audio_uses_detected_language(client):
         "app.services.groq_client.chat_completion"
     ) as mock_chat:
         mock_stt.return_value = transcription
-        mock_chat.return_value = "ভাল লাগিল শুনি।"
+        # The prompt asks for Hindi because that is what was spoken, so the
+        # mocked reply is Hindi too.
+        mock_chat.return_value = "यह सुनकर अच्छा लगा।"
 
         response = client.post(
             "/api/v1/chat/message",
@@ -163,12 +165,13 @@ def test_chat_message_with_audio_uses_detected_language(client):
     body = response.json()
     assert body["transcript"] == "मैं ठीक हूँ"
     assert body["user_message"]["language"] == "hi"
-    assert body["assistant_message"]["language"] == "as"
+    # The patient spoke Hindi, so Coco answers in Hindi even though the app
+    # is set to Assamese.
+    assert body["assistant_message"]["language"] == "hi"
 
     system_prompt = mock_chat.call_args.args[0][0]["content"]
-    assert "Respond ONLY in Assamese (as)" in system_prompt
-    assert "Preferred language: Assamese (as)" in system_prompt
-    assert "spoken in Hindi" in system_prompt
+    assert "Reply ONLY in Hindi (hi)" in system_prompt
+    assert "App interface language: Assamese (as)" in system_prompt
 
 
 def test_chat_message_with_silent_audio_returns_400(client):
@@ -188,3 +191,55 @@ def test_chat_message_with_silent_audio_returns_400(client):
         )
 
     assert response.status_code == 400
+
+
+def test_typed_language_is_mirrored_over_the_app_language(client):
+    """A Hindi question in an Assamese app has to come back in Hindi."""
+    token = _patient_token(client)
+
+    with patch("app.services.groq_client.chat_completion") as mock_chat:
+        mock_chat.return_value = "आपका पुराना घर परिवार का घर है।"
+
+        response = client.post(
+            "/api/v1/chat/message",
+            data={"text": "मेरा घर किधर है?", "language": "as"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["user_message"]["language"] == "hi"
+    assert body["assistant_message"]["language"] == "hi"
+
+    system_prompt = mock_chat.call_args.args[0][0]["content"]
+    assert "Reply ONLY in Hindi (hi)" in system_prompt
+    assert "Follow the patient, not the app." in system_prompt
+
+
+def test_untypeable_message_falls_back_to_the_app_language(client):
+    token = _patient_token(client)
+
+    with patch("app.services.groq_client.chat_completion") as mock_chat:
+        mock_chat.return_value = "?"
+
+        response = client.post(
+            "/api/v1/chat/message",
+            data={"text": "?!!", "language": "as"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+    assert response.status_code == 200
+    assert response.json()["assistant_message"]["language"] == "as"
+
+
+def test_detect_text_language():
+    from app.services.chat_service import detect_text_language
+
+    assert detect_text_language("मेरा घर किधर है?", "as") == "hi"
+    assert detect_text_language("Where is my home?", "as") == "en"
+    # One script, two languages: the app setting breaks the tie.
+    assert detect_text_language("মোৰ ঘৰ ক\'ত?", "as") == "as"
+    assert detect_text_language("আমার বাড়ি কোথায়?", "bn") == "bn"
+    # A stray English word does not make a Hindi sentence English.
+    assert detect_text_language("मेरा doctor कब आएगा?", "as") == "hi"
+    assert detect_text_language("12:30", "as") is None

@@ -205,7 +205,9 @@ def build_patient_context(
     lang_name = LANGUAGE_NAMES.get(lang_code, "English")
     lines = [
         f"Patient name: {patient.full_name}",
-        f"Preferred language: {lang_name} ({lang_code})",
+        # Labelled as the interface setting, not as what to answer in: the
+        # reply follows whichever language the patient just used.
+        f"App interface language: {lang_name} ({lang_code})",
         f"Region: {patient.region or 'North East India'}",
     ]
 

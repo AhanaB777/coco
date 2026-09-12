@@ -41,13 +41,15 @@ Using what you know:
   caregiver if one is listed.
 - Repeat facts calmly and without surprise if they ask the same thing again.
 
+Language:
+{language_rules}
+
 Rules:
-- Respond ONLY in {language_name} ({language_code}).
 - Keep replies to 2-4 short sentences unless the user asks for more detail.
 - Use culturally familiar references for the North Eastern Region when appropriate.
 - Address the patient by their first name when natural.
 - Do not mention that you are an AI unless asked directly.
-{spoken_language_note}"""
+"""
 
 
 def _resolve_language(patient: Patient, override: Optional[str]) -> str:
@@ -57,26 +59,93 @@ def _resolve_language(patient: Patient, override: Optional[str]) -> str:
     return lang
 
 
+def _script_of(char: str) -> Optional[str]:
+    cp = ord(char)
+    if 0x0900 <= cp <= 0x097F or 0xA8E0 <= cp <= 0xA8FF:
+        return "devanagari"
+    if 0x0980 <= cp <= 0x09FF:
+        return "bengali"
+    if char.isascii() and char.isalpha():
+        return "latin"
+    return None
+
+
+def detect_text_language(text: str, app_language: str) -> Optional[str]:
+    """Which supported language did the patient type in?
+
+    Script is the only signal available for typed text, so this cannot tell
+    Assamese from Bengali (one script) or English from romanised Hindi (one
+    alphabet). The app language breaks the first tie; the model is told to
+    override the second when the words say otherwise.
+    """
+    counts = {"devanagari": 0, "bengali": 0, "latin": 0}
+    for char in text:
+        script = _script_of(char)
+        if script:
+            counts[script] += 1
+
+    total = sum(counts.values())
+    if total == 0:
+        return None
+
+    indic_script = max(("devanagari", "bengali"), key=lambda s: counts[s])
+    indic = counts[indic_script]
+    # Indic wins on a minority share, matching the narrator's script splitter:
+    # a few English words inside a Hindi sentence do not make the message
+    # English, but the reverse is not true.
+    if indic and indic / total >= 0.3:
+        if indic_script == "devanagari":
+            return "hi"
+        return "as" if app_language == "as" else "bn"
+    if counts["latin"]:
+        return "en"
+    return None
+
+
+def _language_rules(reply_language: str, app_language: str, detected: bool) -> str:
+    """Tell the model which language to answer in, and how sure we are."""
+    reply_name = LANGUAGE_NAMES[reply_language]
+
+    if not detected:
+        # Punctuation, digits or an emoji: nothing to mirror, so fall back to
+        # the interface language rather than assert something untrue.
+        return (
+            f"- The patient's last message gives no clue which language it is "
+            f"in. Reply in {reply_name} ({reply_language}), unless the message "
+            f"is plainly in another language — then use theirs."
+        )
+
+    lines = [
+        f"- The patient's last message is in {reply_name}. Reply ONLY in "
+        f"{reply_name} ({reply_language}), written in its own script.",
+        "- Always answer in the language the patient used, even when the app's "
+        f"interface language is something else (it is currently "
+        f"{LANGUAGE_NAMES[app_language]}). Follow the patient, not the app.",
+        "- If they switch language later, switch with them on the very next reply.",
+    ]
+
+    if reply_language == "en":
+        # Script alone cannot separate English from romanised Hindi/Assamese,
+        # which is how many patients type on a phone keyboard.
+        lines.append(
+            "- If their message is actually Hindi, Assamese or Bengali written "
+            "in English letters, reply in that language in its own script "
+            "instead of in English."
+        )
+
+    return "\n".join(lines)
+
+
 def _build_system_prompt(
     patient: Patient,
     patient_context: str,
-    language: str,
-    spoken_language: Optional[str] = None,
+    reply_language: str,
+    app_language: str,
+    detected: bool,
 ) -> str:
-    note = ""
-    if spoken_language and spoken_language != language and spoken_language in LANGUAGE_NAMES:
-        # Patients switch languages mid-conversation. Understand what they said
-        # in the language they used, but keep replying in the app language so
-        # the installed narrator voice can read it.
-        note = (
-            f"- The patient's last message was spoken in {LANGUAGE_NAMES[spoken_language]}; "
-            f"understand it as such but still reply in {LANGUAGE_NAMES[language]}.\n"
-        )
     return SYSTEM_PROMPT_TEMPLATE.format(
         patient_context=patient_context,
-        language_name=LANGUAGE_NAMES[language],
-        language_code=language,
-        spoken_language_note=note,
+        language_rules=_language_rules(reply_language, app_language, detected),
     )
 
 
@@ -147,24 +216,25 @@ def process_chat_message(
     audio_filename: str = "recording.m4a",
     language_override: Optional[str] = None,
 ) -> dict:
-    language = _resolve_language(patient, language_override)
-    spoken_language: Optional[str] = None
+    app_language = _resolve_language(patient, language_override)
+    user_language: Optional[str] = None
 
     if text and text.strip():
         user_text = text.strip()
+        user_language = detect_text_language(user_text, app_language)
     elif audio_bytes:
         transcription = groq_client.transcribe_audio(
             audio_bytes,
             audio_filename,
-            language_hint=language,
+            language_hint=app_language,
         )
         user_text = transcription.text
         if transcription.language in LANGUAGE_NAMES:
-            spoken_language = transcription.language
+            user_language = transcription.language
         # Whisper cannot tell Assamese from Bengali, so under an Assamese
         # setting a Bengali detection is the patient speaking Assamese.
-        if language == "as" and spoken_language == "bn":
-            spoken_language = "as"
+        if app_language == "as" and user_language == "bn":
+            user_language = "as"
         if not user_text:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -176,19 +246,32 @@ def process_chat_message(
             detail="Provide either text or an audio recording.",
         )
 
-    patient_context = build_patient_context(db, patient, language=language)
+    # Answer in the language the patient used. The narrator picks its voice
+    # from the script of the reply, not from the interface setting, so a Hindi
+    # answer inside an Assamese app is still spoken aloud correctly.
+    reply_language = user_language or app_language
+
+    patient_context = build_patient_context(db, patient, language=app_language)
     system_prompt = _build_system_prompt(
-        patient, patient_context, language, spoken_language=spoken_language
+        patient,
+        patient_context,
+        reply_language,
+        app_language,
+        detected=user_language is not None,
     )
     history = _load_history(db, patient.id)
     groq_messages = _to_groq_messages(system_prompt, history, user_text)
     assistant_text = groq_client.chat_completion(groq_messages)
 
     user_message = _persist_message(
-        db, patient.id, ChatRole.USER, user_text, spoken_language or language
+        db, patient.id, ChatRole.USER, user_text, user_language or app_language
     )
+    # Label the reply by what was actually written. Romanised Hindi reads as
+    # Latin on the way in, and the model answers it in Devanagari, so the
+    # requested language is not always the one that came back.
+    assistant_language = detect_text_language(assistant_text, app_language) or reply_language
     assistant_message = _persist_message(
-        db, patient.id, ChatRole.ASSISTANT, assistant_text, language
+        db, patient.id, ChatRole.ASSISTANT, assistant_text, assistant_language
     )
 
     return {
