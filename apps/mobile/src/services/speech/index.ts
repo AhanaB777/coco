@@ -4,6 +4,7 @@ export {
   speak,
   stopSpeaking,
   subscribeSpeaking,
+  waitForSpeechRelease,
   type NarrationState,
   type SpeakOptions,
   type SpeakOutcome,

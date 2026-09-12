@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 
 from fastapi import FastAPI
@@ -21,6 +22,13 @@ from app.routers import (
     voice,
 )
 from app.schemas import HealthResponse
+
+# Uvicorn configures only its own loggers; the app's go to the root logger,
+# which otherwise drops everything below WARNING. Same prefix style as uvicorn.
+logging.basicConfig(
+    level=settings.LOG_LEVEL.upper(),
+    format="%(levelname)s:     %(name)s: %(message)s",
+)
 
 app = FastAPI(
     title="Coco API",
