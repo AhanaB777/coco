@@ -45,6 +45,7 @@ export function SplashScreen({ navigation }: Props) {
               patientId: patient.id,
               patientName: patient.full_name,
               loginUsername: patient.full_name,
+              role: me.role === "caregiver" ? "caregiver" : "patient",
               preferredLanguage: patient.preferred_language,
             });
             navigation.replace("Home");

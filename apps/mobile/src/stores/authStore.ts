@@ -6,6 +6,7 @@ import type { NarratorLanguageCode } from "@/constants/narratorLanguages";
 import { normalizeNarratorLanguageCode } from "@/constants/narratorLanguages";
 
 interface AuthState {
+  role: "patient" | "caregiver" | null;
   patientId: string | null;
   patientName: string | null;
   loginUsername: string | null;
@@ -19,6 +20,7 @@ interface AuthState {
     patientId: string;
     patientName: string;
     loginUsername: string;
+    role?: "patient" | "caregiver";
     preferredLanguage?: string | null;
   }) => void;
   setPreferredLanguage: (code: NarratorLanguageCode) => void;
@@ -32,6 +34,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
+      role: null,
       patientId: null,
       patientName: null,
       loginUsername: null,
@@ -45,9 +48,11 @@ export const useAuthStore = create<AuthState>()(
         patientId,
         patientName,
         loginUsername,
+        role = "patient",
         preferredLanguage,
       }) =>
         set({
+          role,
           accessToken,
           patientId,
           patientName,
@@ -77,6 +82,7 @@ export const useAuthStore = create<AuthState>()(
           patientId: null,
           patientName: null,
           loginUsername: null,
+          role: null,
         }),
 
       setHasHydrated: (value) => set({ hasHydrated: value }),
@@ -88,6 +94,7 @@ export const useAuthStore = create<AuthState>()(
         patientId: state.patientId,
         patientName: state.patientName,
         loginUsername: state.loginUsername,
+        role: state.role,
         preferredLanguage: state.preferredLanguage,
         accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
