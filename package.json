@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "dev:backend": "docker compose up backend postgres redis",
+    "dev:backend:offline": "AI_PROVIDER=local docker compose up backend postgres redis",
+    "ai:offline": "scripts/offline-ai.sh",
     "dev:caretaker": "pnpm --filter caretaker-dashboard dev",
     "dev:admin": "pnpm --filter admin-dashboard dev",
     "dev:dashboards": "pnpm --parallel --filter caretaker-dashboard --filter admin-dashboard dev",

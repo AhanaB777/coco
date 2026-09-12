@@ -5,7 +5,33 @@ export type VoiceUiState = "idle" | "listening" | "thinking" | "speaking";
 export interface RecordingResult {
   uri: string;
   mimeType: string;
+  durationMillis: number;
 }
+
+/** Anything shorter is an accidental tap; Whisper hallucinates text for it. */
+export const MIN_RECORDING_MS = 700;
+/** Cap so a forgotten open mic does not upload an unbounded file. */
+export const MAX_RECORDING_MS = 60_000;
+
+/**
+ * Whisper resamples everything to 16 kHz mono before decoding, so the stock
+ * 44.1 kHz stereo preset only makes the upload larger on weak rural networks.
+ */
+const SPEECH_RECORDING_OPTIONS: Audio.RecordingOptions = {
+  ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
+  android: {
+    ...Audio.RecordingOptionsPresets.HIGH_QUALITY.android,
+    sampleRate: 16000,
+    numberOfChannels: 1,
+    bitRate: 64000,
+  },
+  ios: {
+    ...Audio.RecordingOptionsPresets.HIGH_QUALITY.ios,
+    sampleRate: 16000,
+    numberOfChannels: 1,
+    bitRate: 64000,
+  },
+};
 
 let activeRecording: Audio.Recording | null = null;
 
@@ -45,7 +71,7 @@ export async function startRecording(): Promise<void> {
 
   try {
     const { recording } = await Audio.Recording.createAsync(
-      Audio.RecordingOptionsPresets.HIGH_QUALITY
+      SPEECH_RECORDING_OPTIONS
     );
     activeRecording = recording;
   } catch (error) {
@@ -63,9 +89,15 @@ export async function stopRecording(): Promise<RecordingResult | null> {
   activeRecording = null;
 
   try {
+    let durationMillis = 0;
+    try {
+      durationMillis = (await recording.getStatusAsync()).durationMillis ?? 0;
+    } catch {
+      // Unknown duration must not block the upload; the server still guards.
+    }
     await recording.stopAndUnloadAsync();
     const uri = recording.getURI();
-    return uri ? { uri, mimeType: "audio/m4a" } : null;
+    return uri ? { uri, mimeType: "audio/m4a", durationMillis } : null;
   } finally {
     // In a finally block so a failed unload cannot strand the session in
     // record mode and silence every later utterance.

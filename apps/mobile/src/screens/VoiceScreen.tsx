@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,6 +22,8 @@ import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
 import { fetchChatHistory, sendTextMessage, sendVoiceMessage } from "@/services/chat";
 import {
+  MAX_RECORDING_MS,
+  MIN_RECORDING_MS,
   getVoiceStateLabel,
   startRecording,
   stopRecording,
@@ -40,6 +43,7 @@ export function VoiceScreen({ navigation, route }: Props) {
   const [textInput, setTextInput] = useState(route.params?.seedPrompt ?? "");
   const [loadingHistory, setLoadingHistory] = useState(true);
   const scrollRef = useRef<ScrollView>(null);
+  const autoStopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { t } = useTranslation();
   const language = getPreferredNarratorLanguage();
   const { speak, stop } = useNarration();
@@ -126,6 +130,29 @@ export function VoiceScreen({ navigation, route }: Props) {
     [language, speak]
   );
 
+  const clearAutoStop = useCallback(() => {
+    if (autoStopRef.current) {
+      clearTimeout(autoStopRef.current);
+      autoStopRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => clearAutoStop, [clearAutoStop]);
+
+  /**
+   * Spoken-only prompts for recoverable listening problems. Unlike
+   * `handleError` these add no bubble: nothing was said, so there is nothing
+   * to show in the conversation.
+   */
+  const promptRetry = useCallback(
+    async (key: "voice.tooShort" | "voice.notUnderstood") => {
+      setState("speaking");
+      await speak(t(key), { languageCode: language, priority: "user" });
+      setState("idle");
+    },
+    [language, speak, t]
+  );
+
   const handleError = useCallback(async () => {
     const errorText = t("voice.error");
     setMessages((prev) => [
@@ -146,21 +173,50 @@ export function VoiceScreen({ navigation, route }: Props) {
   }, [language, scrollToEnd, speak, t]);
 
   const processVoiceRecording = useCallback(async () => {
+    clearAutoStop();
     setState("thinking");
+    let recording: Awaited<ReturnType<typeof stopRecording>> = null;
     try {
-      const recording = await stopRecording();
-      if (!recording) {
-        setState("idle");
-        return;
-      }
+      recording = await stopRecording();
+    } catch {
+      await handleError();
+      return;
+    }
+    if (!recording) {
+      setState("idle");
+      return;
+    }
+    // An accidental tap produces a clip Whisper will invent words for, so it
+    // never leaves the phone.
+    if (recording.durationMillis > 0 && recording.durationMillis < MIN_RECORDING_MS) {
+      await promptRetry("voice.tooShort");
+      return;
+    }
 
+    try {
       const turn = await sendVoiceMessage(recording.uri, language);
       appendTurn(turn.user_message, turn.assistant_message);
       await handleAssistantReply(turn.assistant_message);
-    } catch {
+    } catch (error) {
+      // 400 is the server saying the clip held no recognisable speech.
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        await promptRetry("voice.notUnderstood");
+        return;
+      }
       await handleError();
     }
-  }, [appendTurn, handleAssistantReply, handleError, language]);
+  }, [
+    appendTurn,
+    clearAutoStop,
+    handleAssistantReply,
+    handleError,
+    language,
+    promptRetry,
+  ]);
+
+  // Declared after processVoiceRecording so the auto-stop timer can call it.
+  const processVoiceRecordingRef = useRef(processVoiceRecording);
+  processVoiceRecordingRef.current = processVoiceRecording;
 
   const handleMicPress = async () => {
     if (state === "thinking" || state === "speaking") {
@@ -173,6 +229,11 @@ export function VoiceScreen({ navigation, route }: Props) {
         stop();
         await startRecording();
         setState("listening");
+        // A forgotten open mic would otherwise upload an unbounded file.
+        clearAutoStop();
+        autoStopRef.current = setTimeout(() => {
+          void processVoiceRecordingRef.current();
+        }, MAX_RECORDING_MS);
       } catch (error) {
         const message =
           error instanceof Error && error.message === "MIC_PERMISSION_DENIED"

@@ -149,6 +149,40 @@ import { Button } from "@coco/ui";
 
 **Roles:** `patient` · `caregiver` · `admin` — mapped to the three frontends.
 
+## Offline demo (no internet)
+
+The voice chatbot normally uses Groq's hosted Whisper and chat models. For a
+demo without a connection, the backend can talk to models running on the
+laptop instead (Apple Silicon with 16 GB RAM is enough):
+
+| Piece | Local replacement | Port |
+|-------|-------------------|------|
+| Speech to text | whisper.cpp server, `ggml-large-v3` (Metal) | 8081 |
+| Chat LLM | Ollama, `gemma3:4b` | 11434 |
+
+One-time setup while still online:
+
+```bash
+brew install whisper-cpp ollama ffmpeg
+scripts/offline-ai.sh --setup   # downloads about 6 GB of models
+```
+
+At the demo:
+
+```bash
+scripts/offline-ai.sh                          # terminal 1: local models
+AI_PROVIDER=local docker compose up backend     # terminal 2: backend
+```
+
+The phone still needs to reach the laptop: turn on the Mac's Wi-Fi hotspot
+(or use any router with no uplink), join it from the phone, and point
+`EXPO_PUBLIC_API_URL` at the Mac's address on that network. Expect replies to
+take a few seconds longer than with Groq, and Assamese replies to be rougher,
+since small local models know little Assamese.
+
+`LOCAL_LLM_MODEL` picks another Ollama model (for example `qwen2.5:7b` for
+better Hindi and Bengali at the cost of speed).
+
 ## Environment variables
 
 See [`.env.example`](.env.example) for all variables. Key ones:
@@ -161,6 +195,9 @@ See [`.env.example`](.env.example) for all variables. Key ones:
 | `BACKEND_CORS_ORIGINS` | Allowed origins (dashboards + Expo dev server) |
 | `NEXT_PUBLIC_API_URL` | API base URL for Next.js dashboards |
 | `EXPO_PUBLIC_API_URL` | API base URL for Expo mobile app |
+| `GROQ_API_KEY` | Groq key for the voice chatbot (hosted mode) |
+| `AI_PROVIDER` | `groq` (default) or `local` for the offline demo stack |
+| `LOCAL_STT_URL`, `LOCAL_LLM_URL`, `LOCAL_LLM_MODEL` | Where the backend finds whisper.cpp and Ollama in local mode |
 
 ## Team workflow (6 members)
 
