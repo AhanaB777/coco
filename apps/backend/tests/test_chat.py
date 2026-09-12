@@ -83,6 +83,61 @@ def test_chat_context_builds(client, db_session):
     assert "reminders" in context.lower()
 
 
+def test_chat_context_includes_my_world_details(client, db_session):
+    """The model can only answer "where is my home?" if the journal is in the prompt."""
+    from app.models import Patient
+    from app.services.chat_context import build_patient_context
+
+    patient = db_session.get(Patient, PATIENT_1_ID)
+    context = build_patient_context(db_session, patient)
+
+    # Relationships, not just bare names.
+    assert "Priya — their daughter" in context
+    assert "Rohan — their grandson" in context
+    # Places, grouped so a question about home has somewhere to land.
+    assert "Places they know" in context
+    assert "Our old house" in context
+    assert "The family home" in context
+    # The caregiver's own words about a memory.
+    assert "tea garden" in context
+    assert "bamboo grove" in context
+    # Recognition difficulty so Coco knows where to help more.
+    assert "often hard for them to recall" in context
+
+
+def test_chat_context_without_my_world_says_so(client, db_session):
+    from app.models import MyWorldItem, Patient
+    from app.services.chat_context import build_patient_context
+
+    db_session.query(MyWorldItem).filter(
+        MyWorldItem.patient_id == PATIENT_1_ID
+    ).delete()
+    db_session.commit()
+
+    patient = db_session.get(Patient, PATIENT_1_ID)
+    context = build_patient_context(db_session, patient)
+
+    assert "My World journal: empty" in context
+
+
+def test_chat_message_sends_my_world_to_the_model(client):
+    token = _patient_token(client)
+
+    with patch("app.services.groq_client.chat_completion") as mock_chat:
+        mock_chat.return_value = "Your old house is the family home."
+
+        response = client.post(
+            "/api/v1/chat/message",
+            data={"text": "Where is my home?", "language": "en"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+    assert response.status_code == 200
+    system_prompt = mock_chat.call_args.args[0][0]["content"]
+    assert "Our old house" in system_prompt
+    assert "Never say you do not know something that is written above" in system_prompt
+
+
 def test_chat_message_with_audio_uses_detected_language(client):
     from app.services.groq_client import Transcription
 
