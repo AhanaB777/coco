@@ -69,14 +69,50 @@ export async function startRecording(): Promise<void> {
     playsInSilentModeIOS: true,
   });
 
+  // expo-av allows one prepared Recording at a time. A clip left behind by a
+  // failed stop, a Fast Refresh or a crashed request would otherwise make
+  // every later tap fail with "Only one Recording object can be prepared".
+  await discardStaleRecording();
+
   try {
-    const { recording } = await Audio.Recording.createAsync(
-      SPEECH_RECORDING_OPTIONS
+    activeRecording = await createRecording(SPEECH_RECORDING_OPTIONS);
+  } catch (compactError) {
+    // iOS refuses to prepare a 16 kHz AAC recorder on some inputs (seen on
+    // the simulator while the Mac's default microphone was a Bluetooth
+    // headset). A larger upload beats a dead microphone, so retry with the
+    // stock preset before giving up.
+    console.warn(
+      "Compact speech recording refused, retrying with the default preset",
+      compactError
     );
-    activeRecording = recording;
-  } catch (error) {
-    await resetAudioModeForPlayback();
-    throw error;
+    try {
+      activeRecording = await createRecording(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+    } catch (error) {
+      await resetAudioModeForPlayback();
+      throw error;
+    }
+  }
+}
+
+async function createRecording(
+  options: Audio.RecordingOptions
+): Promise<Audio.Recording> {
+  const { recording } = await Audio.Recording.createAsync(options);
+  return recording;
+}
+
+async function discardStaleRecording(): Promise<void> {
+  const stale = activeRecording;
+  activeRecording = null;
+  if (!stale) {
+    return;
+  }
+  try {
+    await stale.stopAndUnloadAsync();
+  } catch {
+    // Already unloaded, or never finished preparing; nothing to release.
   }
 }
 
