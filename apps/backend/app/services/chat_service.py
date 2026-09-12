@@ -32,7 +32,7 @@ Rules:
 - Use culturally familiar references for the North Eastern Region when appropriate.
 - Address the patient by their first name when natural.
 - Do not mention that you are an AI unless asked directly.
-"""
+{spoken_language_note}"""
 
 
 def _resolve_language(patient: Patient, override: Optional[str]) -> str:
@@ -42,11 +42,26 @@ def _resolve_language(patient: Patient, override: Optional[str]) -> str:
     return lang
 
 
-def _build_system_prompt(patient: Patient, patient_context: str, language: str) -> str:
+def _build_system_prompt(
+    patient: Patient,
+    patient_context: str,
+    language: str,
+    spoken_language: Optional[str] = None,
+) -> str:
+    note = ""
+    if spoken_language and spoken_language != language and spoken_language in LANGUAGE_NAMES:
+        # Patients switch languages mid-conversation. Understand what they said
+        # in the language they used, but keep replying in the app language so
+        # the installed narrator voice can read it.
+        note = (
+            f"- The patient's last message was spoken in {LANGUAGE_NAMES[spoken_language]}; "
+            f"understand it as such but still reply in {LANGUAGE_NAMES[language]}.\n"
+        )
     return SYSTEM_PROMPT_TEMPLATE.format(
         patient_context=patient_context,
         language_name=LANGUAGE_NAMES[language],
         language_code=language,
+        spoken_language_note=note,
     )
 
 
@@ -118,15 +133,23 @@ def process_chat_message(
     language_override: Optional[str] = None,
 ) -> dict:
     language = _resolve_language(patient, language_override)
+    spoken_language: Optional[str] = None
 
     if text and text.strip():
         user_text = text.strip()
     elif audio_bytes:
-        user_text = groq_client.transcribe_audio(
+        transcription = groq_client.transcribe_audio(
             audio_bytes,
             audio_filename,
             language_hint=language,
         )
+        user_text = transcription.text
+        if transcription.language in LANGUAGE_NAMES:
+            spoken_language = transcription.language
+        # Whisper cannot tell Assamese from Bengali, so under an Assamese
+        # setting a Bengali detection is the patient speaking Assamese.
+        if language == "as" and spoken_language == "bn":
+            spoken_language = "as"
         if not user_text:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -138,14 +161,16 @@ def process_chat_message(
             detail="Provide either text or an audio recording.",
         )
 
-    patient_context = build_patient_context(db, patient)
-    system_prompt = _build_system_prompt(patient, patient_context, language)
+    patient_context = build_patient_context(db, patient, language=language)
+    system_prompt = _build_system_prompt(
+        patient, patient_context, language, spoken_language=spoken_language
+    )
     history = _load_history(db, patient.id)
     groq_messages = _to_groq_messages(system_prompt, history, user_text)
     assistant_text = groq_client.chat_completion(groq_messages)
 
     user_message = _persist_message(
-        db, patient.id, ChatRole.USER, user_text, language
+        db, patient.id, ChatRole.USER, user_text, spoken_language or language
     )
     assistant_message = _persist_message(
         db, patient.id, ChatRole.ASSISTANT, assistant_text, language

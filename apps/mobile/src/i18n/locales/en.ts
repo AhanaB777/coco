@@ -262,6 +262,8 @@ export const en: Translations = {
     speaking: "Speaking",
     thanks: "Thank you. I heard you.",
     error: "Sorry, I could not respond right now. Please try again.",
+    notUnderstood: "I did not catch that. Please tap the microphone and speak a little longer.",
+    tooShort: "That was too short. Hold on a moment and speak after you tap.",
     you: "You",
     coco: "Coco",
     welcome: "Hello! I am Coco. Tap the microphone and tell me how you are feeling today.",

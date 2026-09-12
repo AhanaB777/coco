@@ -43,6 +43,10 @@ services:
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_CHAT_MODEL: ${GROQ_CHAT_MODEL:-openai/gpt-oss-20b}
       GROQ_WHISPER_MODEL: ${GROQ_WHISPER_MODEL:-whisper-large-v3}
+      AI_PROVIDER: ${AI_PROVIDER:-groq}
+      LOCAL_STT_URL: ${LOCAL_STT_URL:-http://host.docker.internal:8081}
+      LOCAL_LLM_URL: ${LOCAL_LLM_URL:-http://host.docker.internal:11434}
+      LOCAL_LLM_MODEL: ${LOCAL_LLM_MODEL:-gemma3:4b}
     depends_on:
       postgres:
         condition: service_healthy

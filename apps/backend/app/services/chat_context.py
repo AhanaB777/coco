@@ -31,7 +31,9 @@ def _today_reminders(db: Session, patient_id) -> list[Reminder]:
     )
 
 
-def build_patient_context(db: Session, patient: Patient) -> str:
+def build_patient_context(
+    db: Session, patient: Patient, language: str | None = None
+) -> str:
     reminders = _today_reminders(db, patient.id)
     pending = [r for r in reminders if not r.is_done]
 
@@ -63,10 +65,14 @@ def build_patient_context(db: Session, patient: Patient) -> str:
 
     ai_summary = get_full_recommendation(sessions, patient, my_world_items=my_world_items)
 
-    lang_name = LANGUAGE_NAMES.get(patient.preferred_language, "English")
+    # The phone's language choice is never written back to the patient row, so
+    # the caller passes the resolved language; otherwise this line would
+    # contradict the "respond only in" rule in the system prompt.
+    lang_code = language or patient.preferred_language
+    lang_name = LANGUAGE_NAMES.get(lang_code, "English")
     lines = [
         f"Patient name: {patient.full_name}",
-        f"Preferred language: {lang_name} ({patient.preferred_language})",
+        f"Preferred language: {lang_name} ({lang_code})",
         f"Region: {patient.region or 'North East India'}",
         f"Cognitive level: {patient.cognitive_level}/5",
         f"Suggested game difficulty: {ai_summary['difficulty']['recommended_level']}/5",

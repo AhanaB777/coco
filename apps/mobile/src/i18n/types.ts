@@ -203,6 +203,8 @@ export interface Translations {
     sendText: string;
     typeMessage: string;
     noMicPermission: string;
+    notUnderstood: string;
+    tooShort: string;
   };
   pin: {
     delete: string;

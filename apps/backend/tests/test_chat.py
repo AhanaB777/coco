@@ -81,3 +81,55 @@ def test_chat_context_builds(client, db_session):
     assert "Lakshmi Devi" in context
     assert "Preferred language" in context
     assert "reminders" in context.lower()
+
+
+def test_chat_message_with_audio_uses_detected_language(client):
+    from app.services.groq_client import Transcription
+
+    token = _patient_token(client)
+    transcription = Transcription(
+        text="मैं ठीक हूँ", language="hi", confidence=-0.2, no_speech_prob=0.05
+    )
+
+    with patch("app.services.groq_client.transcribe_audio") as mock_stt, patch(
+        "app.services.groq_client.chat_completion"
+    ) as mock_chat:
+        mock_stt.return_value = transcription
+        mock_chat.return_value = "ভাল লাগিল শুনি।"
+
+        response = client.post(
+            "/api/v1/chat/message",
+            data={"language": "as"},
+            files={"audio": ("clip.m4a", b"fake-audio", "audio/m4a")},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["transcript"] == "मैं ठीक हूँ"
+    assert body["user_message"]["language"] == "hi"
+    assert body["assistant_message"]["language"] == "as"
+
+    system_prompt = mock_chat.call_args.args[0][0]["content"]
+    assert "Respond ONLY in Assamese (as)" in system_prompt
+    assert "Preferred language: Assamese (as)" in system_prompt
+    assert "spoken in Hindi" in system_prompt
+
+
+def test_chat_message_with_silent_audio_returns_400(client):
+    from app.services.groq_client import Transcription
+
+    token = _patient_token(client)
+
+    with patch("app.services.groq_client.transcribe_audio") as mock_stt:
+        mock_stt.return_value = Transcription(
+            text="", language=None, confidence=None, no_speech_prob=0.9
+        )
+        response = client.post(
+            "/api/v1/chat/message",
+            data={"language": "en"},
+            files={"audio": ("clip.m4a", b"fake-audio", "audio/m4a")},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+    assert response.status_code == 400

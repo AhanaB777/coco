@@ -19,6 +19,17 @@ class Settings(BaseSettings):
     GROQ_CHAT_MODEL: str = "openai/gpt-oss-20b"
     GROQ_WHISPER_MODEL: str = "whisper-large-v3"
 
+    # "groq" (hosted, needs internet) or "local" (whisper.cpp + Ollama on the
+    # host machine, for demos without a connection). See README "Offline demo".
+    AI_PROVIDER: str = "groq"
+    LOCAL_STT_URL: str = "http://host.docker.internal:8081"
+    LOCAL_LLM_URL: str = "http://host.docker.internal:11434"
+    LOCAL_LLM_MODEL: str = "gemma3:4b"
+
+    @property
+    def ai_is_local(self) -> bool:
+        return self.AI_PROVIDER.strip().lower() == "local"
+
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",")]
