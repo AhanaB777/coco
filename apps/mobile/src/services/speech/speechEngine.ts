@@ -53,6 +53,24 @@ export interface NarrationState {
 let currentToken = 0;
 let lastDiagnostic: ResolvedVoice | null = null;
 
+/** The utterance the engine is waiting on, so stop() can wait for it too. */
+let inFlightUtterance: Promise<ChunkOutcome> | null = null;
+/** When the synthesizer last reported an utterance over (done, stopped or failed). */
+let speechIdleSince = 0;
+
+/** An engine that never acknowledges stop() must not wedge the microphone. */
+const STOP_ACK_TIMEOUT_MS = 1000;
+/**
+ * How long the synthesizer keeps the audio session after its last word.
+ *
+ * expo-speech runs AVSpeechSynthesizer on its own session (see the
+ * `useApplicationAudioSession: false` in speakOnce), which it deactivates on
+ * its own schedule after an utterance ends — including one we cancelled. A
+ * recorder opened before that lands is torn down with it and captures
+ * silence, which the patient meets as "I did not understand" a moment later.
+ */
+const SESSION_RELEASE_MS = 500;
+
 let state: NarrationState = {
   isSpeaking: false,
   requestId: 0,
@@ -89,6 +107,20 @@ export async function stopSpeaking(): Promise<void> {
   } catch {
     // Nothing was speaking.
   }
+  // Speech.stop() resolves before the synthesizer has actually cancelled; the
+  // utterance's own onStopped is the real signal.
+  if (inFlightUtterance) {
+    await Promise.race([inFlightUtterance, delay(STOP_ACK_TIMEOUT_MS)]);
+  }
+}
+
+/**
+ * Resolves once the synthesizer has had time to let go of the audio session.
+ * Call it between stopping narration and opening the microphone.
+ */
+export async function waitForSpeechRelease(): Promise<void> {
+  const remaining = SESSION_RELEASE_MS - (Date.now() - speechIdleSince);
+  if (remaining > 0) await delay(remaining);
 }
 
 function delay(ms: number): Promise<void> {
@@ -127,7 +159,7 @@ function speakOnce(
   token: number,
   rate: number
 ): Promise<ChunkOutcome> {
-  return new Promise((resolve) => {
+  const utterance = new Promise<ChunkOutcome>((resolve) => {
     let settled = false;
     let startTimer: ReturnType<typeof setTimeout> | undefined;
     let stallTimer: ReturnType<typeof setTimeout> | undefined;
@@ -137,6 +169,7 @@ function speakOnce(
       settled = true;
       if (startTimer) clearTimeout(startTimer);
       if (stallTimer) clearTimeout(stallTimer);
+      speechIdleSince = Date.now();
       resolve(outcome);
     };
 
@@ -165,6 +198,8 @@ function speakOnce(
       onError: () => settle("error"),
     });
   });
+  inFlightUtterance = utterance;
+  return utterance;
 }
 
 async function speakChunk(

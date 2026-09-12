@@ -6,6 +6,12 @@ export interface RecordingResult {
   uri: string;
   mimeType: string;
   durationMillis: number;
+  /**
+   * The recorder had already stopped before we asked it to. The audio session
+   * was taken away underneath it, so the clip is silence from that point on
+   * and not worth an upload.
+   */
+  interrupted: boolean;
 }
 
 /** Anything shorter is an accidental tap; Whisper hallucinates text for it. */
@@ -33,7 +39,52 @@ const SPEECH_RECORDING_OPTIONS: Audio.RecordingOptions = {
   },
 };
 
+/**
+ * The device's own sample rate, still mono. Half the upload of the stock
+ * preset, and it prepares on hardware that refuses a resampled recorder.
+ */
+const MONO_RECORDING_OPTIONS: Audio.RecordingOptions = {
+  ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
+  android: {
+    ...Audio.RecordingOptionsPresets.HIGH_QUALITY.android,
+    numberOfChannels: 1,
+    bitRate: 64000,
+  },
+  ios: {
+    ...Audio.RecordingOptionsPresets.HIGH_QUALITY.ios,
+    numberOfChannels: 1,
+    bitRate: 64000,
+  },
+};
+
+interface RecordingRung {
+  label: string;
+  options: Audio.RecordingOptions;
+}
+
+/**
+ * Recorder settings from the smallest upload to the most compatible.
+ *
+ * Some devices refuse to prepare a recorder that is not at their native rate —
+ * iOS answers "Prepare encountered an error: recorder not prepared." — and the
+ * refusal is a property of the hardware, not of the moment. Retrying the whole
+ * ladder on every tap would promote and tear down the audio session twice
+ * before the microphone opens, which swallows the first word the patient says,
+ * so the rung that worked is remembered for the rest of the session.
+ */
+const RECORDING_LADDER: readonly RecordingRung[] = [
+  { label: "16 kHz mono", options: SPEECH_RECORDING_OPTIONS },
+  { label: "device rate, mono", options: MONO_RECORDING_OPTIONS },
+  { label: "device default", options: Audio.RecordingOptionsPresets.HIGH_QUALITY },
+];
+
 let activeRecording: Audio.Recording | null = null;
+let workingRung = 0;
+
+/** Forget which rung worked. Tests only; a real device does not change mid-run. */
+export function resetRecordingProfile(): void {
+  workingRung = 0;
+}
 
 export async function requestMicPermission(): Promise<boolean> {
   const permission = await Audio.requestPermissionsAsync();
@@ -74,32 +125,40 @@ export async function startRecording(): Promise<void> {
   // every later tap fail with "Only one Recording object can be prepared".
   await discardStaleRecording();
 
-  try {
-    activeRecording = await createRecording(SPEECH_RECORDING_OPTIONS);
-  } catch (compactError) {
-    // iOS refuses to prepare a 16 kHz AAC recorder on some inputs (seen on
-    // the simulator while the Mac's default microphone was a Bluetooth
-    // headset). A larger upload beats a dead microphone, so retry with the
-    // stock preset before giving up.
-    console.warn(
-      "Compact speech recording refused, retrying with the default preset",
-      compactError
-    );
+  let lastError: unknown;
+  for (let rung = workingRung; rung < RECORDING_LADDER.length; rung += 1) {
     try {
-      activeRecording = await createRecording(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
+      activeRecording = await createRecording(RECORDING_LADDER[rung].options);
+      if (rung !== workingRung) {
+        console.warn(
+          `Recording at ${RECORDING_LADDER[workingRung].label} was refused; ` +
+            `using ${RECORDING_LADDER[rung].label} from now on`,
+          lastError
+        );
+        workingRung = rung;
+      }
+      return;
     } catch (error) {
-      await resetAudioModeForPlayback();
-      throw error;
+      lastError = error;
     }
   }
+
+  // Every rung failed: the microphone is unusable, not merely fussy.
+  await resetAudioModeForPlayback();
+  throw lastError;
 }
 
 async function createRecording(
   options: Audio.RecordingOptions
 ): Promise<Audio.Recording> {
-  const { recording } = await Audio.Recording.createAsync(options);
+  const { recording, status } = await Audio.Recording.createAsync(options);
+  // A recorder that prepares but does not run captures silence, which reaches
+  // the patient as "I did not understand that" a sentence later. Treat it as a
+  // refusal so the next rung gets a turn.
+  if (status && status.isRecording === false) {
+    await recording.stopAndUnloadAsync().catch(() => undefined);
+    throw new Error("Recorder prepared but is not capturing audio");
+  }
   return recording;
 }
 
@@ -126,14 +185,17 @@ export async function stopRecording(): Promise<RecordingResult | null> {
 
   try {
     let durationMillis = 0;
+    let interrupted = false;
     try {
-      durationMillis = (await recording.getStatusAsync()).durationMillis ?? 0;
+      const status = await recording.getStatusAsync();
+      durationMillis = status.durationMillis ?? 0;
+      interrupted = status.isRecording === false;
     } catch {
       // Unknown duration must not block the upload; the server still guards.
     }
     await recording.stopAndUnloadAsync();
     const uri = recording.getURI();
-    return uri ? { uri, mimeType: "audio/m4a", durationMillis } : null;
+    return uri ? { uri, mimeType: "audio/m4a", durationMillis, interrupted } : null;
   } finally {
     // In a finally block so a failed unload cannot strand the session in
     // record mode and silence every later utterance.
