@@ -90,19 +90,29 @@ def patient_login(payload: PatientLoginRequest, db: Session = Depends(get_db)):
             patient_id = UUID(payload.patient_id)  # type: ignore[arg-type]
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid patient ID")
-        patient = db.get(Patient, patient_id)
+        candidates = [p for p in [db.get(Patient, patient_id)] if p is not None]
     else:
+        # Names are not unique: a caregiver adding a patient who shares a name
+        # with a seeded one (or with another family's) must not lock the
+        # original out. The PIN is what identifies the person, so try everyone
+        # with that name and take the one whose PIN matches.
         normalized_name = payload.full_name.strip()  # type: ignore[union-attr]
-        patient = (
+        candidates = (
             db.query(Patient)
             .filter(func.lower(Patient.full_name) == normalized_name.lower())
-            .first()
+            .order_by(Patient.created_at)
+            .all()
         )
 
-    if patient is None or patient.pin_hash is None:
-        raise HTTPException(status_code=401, detail="Invalid patient or PIN")
-
-    if not verify_password(payload.pin, patient.pin_hash):
+    patient = next(
+        (
+            p
+            for p in candidates
+            if p.pin_hash is not None and verify_password(payload.pin, p.pin_hash)
+        ),
+        None,
+    )
+    if patient is None:
         raise HTTPException(status_code=401, detail="Invalid patient or PIN")
 
     token = create_access_token(str(patient.id), AuthRole.PATIENT)
