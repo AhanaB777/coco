@@ -11,5 +11,6 @@ describe("community translations", () => {
     expect(getTranslations("as").community.viewDetails).toBe("বিস্তারিত চাওক ▼");
     expect(getTranslations("hi").community.showLess).toBe("कम दिखाएँ ▲");
     expect(getTranslations("en").community.demoCall).toBe("Demo call");
+    expect(getTranslations("en").login.networkError).toContain("Can't reach the server");
   });
 });

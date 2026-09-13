@@ -80,6 +80,24 @@ npm start            # Expo dev server (default port 8081)
 
 Set `EXPO_PUBLIC_API_URL` in `.env` (see `.env.example`) so the app can reach the backend.
 
+**Android emulator:** `localhost` inside the emulator is the virtual device, not Windows/macOS. The app rewrites that to `http://10.0.2.2:8000` (the host loopback). Reload Expo after pulling this change (`npx expo start -c` from `apps/mobile`).
+
+If login still cannot reach Docker on Windows, forward the API port into the emulator:
+
+```bash
+adb reverse tcp:8000 tcp:8000
+```
+
+Seeded patient logins (name + PIN):
+
+| Name | PIN |
+|------|-----|
+| Lakshmi Devi | `1234` |
+| Rajen Das | `5678` |
+| Anjali Sharma | `0000` |
+
+Caregiver/admin emails (`caregiver@coco-demo.io`, `admin@coco-demo.io`) are for the web dashboards, not the patient PIN screen.
+
 ## Running each app individually
 
 ### Backend (without Docker)

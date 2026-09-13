@@ -31,6 +31,7 @@ export const en: Translations = {
     nameAccessibilityHint: "Enter the name on your care profile",
     nameRequired: "Please enter your name.",
     loginError: "Name or PIN is incorrect. Please try again.",
+    networkError: "Can't reach the server. Check that Coco is running on this computer.",
     changeName: "Not you? Change name",
     changeNameAccessibility: "Change name",
     signingIn: "Signing in",

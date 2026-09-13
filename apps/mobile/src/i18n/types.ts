@@ -29,6 +29,7 @@ export interface Translations {
     nameAccessibilityHint: string;
     nameRequired: string;
     loginError: string;
+    networkError: string;
     changeName: string;
     changeNameAccessibility: string;
     signingIn: string;

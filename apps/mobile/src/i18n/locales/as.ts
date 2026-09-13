@@ -31,6 +31,7 @@ export const as: Translations = {
     nameAccessibilityHint: "আপোনাৰ যত্ন প্ৰফাইলত থকা নাম লিখক",
     nameRequired: "অনুগ্ৰহ কৰি আপোনাৰ নাম লিখক।",
     loginError: "নাম বা পিন ভুল। অনুগ্ৰহ কৰি আকৌ চেষ্টা কৰক।",
+    networkError: "চাৰ্ভাৰলৈ সংযোগ হোৱা নাই। এই কম্পিউটাৰত ক’ক’ চলি আছে নেকি চাওক।",
     changeName: "আপুনি নহয়? নাম সলনি কৰক",
     changeNameAccessibility: "নাম সলনি কৰক",
     signingIn: "ছাইন ইন হৈ আছে",

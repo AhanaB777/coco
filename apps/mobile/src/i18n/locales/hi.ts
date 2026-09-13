@@ -31,6 +31,7 @@ export const hi: Translations = {
     nameAccessibilityHint: "अपनी देखभाल प्रोफ़ाइल पर दर्ज नाम लिखें",
     nameRequired: "कृपया अपना नाम लिखें।",
     loginError: "नाम या पिन गलत है। कृपया फिर से कोशिश करें।",
+    networkError: "सर्वर से संपर्क नहीं हो पाया। जांचें कि कोको इस कंप्यूटर पर चल रहा है।",
     changeName: "आप नहीं हैं? नाम बदलें",
     changeNameAccessibility: "नाम बदलें",
     signingIn: "साइन इन हो रहा है",

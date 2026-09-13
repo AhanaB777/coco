@@ -31,6 +31,7 @@ export const bn: Translations = {
     nameAccessibilityHint: "আপনার যত্ন প্রোফাইলের নাম লিখুন",
     nameRequired: "অনুগ্রহ করে আপনার নাম লিখুন।",
     loginError: "নাম বা পিন ভুল। আবার চেষ্টা করুন।",
+    networkError: "সার্ভারের সাথে যোগাযোগ হয়নি। এই কম্পিউটারে কোকো চলছে কিনা দেখুন।",
     changeName: "আপনি নন? নাম বদলান",
     changeNameAccessibility: "নাম বদলান",
     signingIn: "সাইন ইন হচ্ছে",

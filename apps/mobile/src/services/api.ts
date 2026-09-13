@@ -1,8 +1,32 @@
 import axios from "axios";
+import { NativeModules, Platform } from "react-native";
 
+import { resolveApiUrl } from "@/services/resolveApiUrl";
 import { useAuthStore } from "@/stores/authStore";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000";
+function packagerHost(): string | null {
+  const scriptURL: unknown = NativeModules.SourceCode?.scriptURL;
+  if (typeof scriptURL !== "string" || scriptURL.startsWith("file:")) {
+    return null;
+  }
+
+  try {
+    return new URL(scriptURL).hostname || null;
+  } catch {
+    const match = scriptURL.match(/^https?:\/\/(\[[^\]]+\]|[^/:]+)/);
+    return match?.[1] ?? null;
+  }
+}
+
+export const API_URL = resolveApiUrl({
+  envUrl: process.env.EXPO_PUBLIC_API_URL,
+  platform: Platform.OS,
+  packagerHost: packagerHost(),
+});
+
+if (__DEV__) {
+  console.log(`[coco] API base URL: ${API_URL}`);
+}
 
 export const api = axios.create({
   baseURL: API_URL,

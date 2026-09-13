@@ -20,6 +20,7 @@ import {
 import { useSpeakOnMount } from "@/hooks/useSpeakOnMount";
 import { useTranslation } from "@/i18n";
 import type { RootStackParamList } from "@/navigation/types";
+import { API_URL, isOfflineError } from "@/services/api";
 import { fetchAuthMe, patientLogin } from "@/services/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { theme, logoPedestal } from "@/theme";
@@ -118,8 +119,13 @@ export function LoginPinScreen({ navigation }: Props) {
         index: 0,
         routes: [{ name: "Home" }],
       });
-    } catch {
-      setErrorMessage(t("login.loginError"));
+    } catch (error) {
+      if (isOfflineError(error)) {
+        const hint = __DEV__ ? ` (${API_URL})` : "";
+        setErrorMessage(`${t("login.networkError")}${hint}`);
+      } else {
+        setErrorMessage(t("login.loginError"));
+      }
       setPin("");
     } finally {
       setIsSubmitting(false);
